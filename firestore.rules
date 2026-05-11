@@ -1,0 +1,62 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can only access their own data
+    match /users/{uid} {
+      // Allow reading user document
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      // Vault metadata (salt, encrypted verifier, version)
+      match /vault/{docId} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null
+                      && request.auth.uid == uid
+                      && request.resource.data.keys().hasAll(['salt', 'encryptedVerifier', 'version']);
+        allow update: if request.auth != null
+                      && request.auth.uid == uid
+                      && request.resource.data.keys().hasAll(['salt', 'encryptedVerifier', 'version']);
+        allow delete: if false; // Vault metadata should never be deleted through client
+      }
+
+      // Vault items (all sensitive fields must be encrypted)
+      match /vaultItems/{itemId} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null
+                      && request.auth.uid == uid
+                      // Ensure encrypted fields are present — no plaintext sensitive data
+                      && request.resource.data.keys().hasAll([
+                        'encryptedTitle', 'encryptedUrl', 'encryptedUsername',
+                        'encryptedPassword', 'encryptedNotes', 'categoryId'
+                      ]);
+        allow update: if request.auth != null
+                      && request.auth.uid == uid
+                      // Ensure encrypted fields remain present on update
+                      && request.resource.data.keys().hasAll([
+                        'encryptedTitle', 'encryptedUrl', 'encryptedUsername',
+                        'encryptedPassword', 'encryptedNotes', 'categoryId'
+                      ]);
+        allow delete: if request.auth != null && request.auth.uid == uid;
+      }
+
+      // Categories
+      match /categories/{categoryId} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null
+                      && request.auth.uid == uid
+                      && request.resource.data.keys().hasAll(['name', 'icon', 'color', 'isDefault']);
+        allow update: if request.auth != null && request.auth.uid == uid;
+        allow delete: if request.auth != null
+                      && request.auth.uid == uid
+                      // Default categories cannot be deleted
+                      && resource.data.isDefault != true;
+      }
+    }
+
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
