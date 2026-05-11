@@ -31,7 +31,7 @@ export default function UnlockPage() {
     setUnlocking(true)
     try {
       await unlockVault(user.uid, password)
-      nav('/vault', { replace: true })
+      nav('/app/vault', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to unlock vault')
       setMasterPassword('')

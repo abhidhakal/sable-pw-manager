@@ -16,7 +16,7 @@ export default function SetupVaultPage() {
   const handleSetup = async (masterPassword: string) => {
     if (!user) return
     await setupVault(user.uid, masterPassword)
-    nav('/vault', { replace: true })
+    nav('/app/vault', { replace: true })
   }
 
   if (showWelcome) {

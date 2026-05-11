@@ -16,7 +16,7 @@ export default function SecureNotePage() {
     setSaving(true)
     try {
       await addItem(user.uid, data)
-      nav('/vault', { replace: true })
+      nav('/app/vault', { replace: true })
     } catch {
       // toast shown by store
     } finally {
@@ -27,7 +27,7 @@ export default function SecureNotePage() {
   return (
     <div className="animate-fade-in">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => nav('/vault')} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to vault">
+        <button onClick={() => nav('/app/vault')} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to vault">
           <ArrowLeft size={18} />
         </button>
         <div>

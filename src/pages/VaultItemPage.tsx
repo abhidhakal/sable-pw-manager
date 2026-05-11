@@ -25,14 +25,14 @@ export default function VaultItemPage() {
       setSaving(true)
       try {
         await addItem(user.uid, { ...data, url: data.url || undefined, notes: data.notes || undefined })
-        nav('/vault', { replace: true })
+        nav('/app/vault', { replace: true })
       } catch { /* toast shown by store */ } finally { setSaving(false) }
     }
 
     return (
       <div className="animate-fade-in">
         <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => nav('/vault')} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to vault">
+          <button onClick={() => nav('/app/vault')} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to vault">
             <ArrowLeft size={18} />
           </button>
           <div>
@@ -54,14 +54,14 @@ export default function VaultItemPage() {
       setSaving(true)
       try {
         await updateItem(user.uid, id, { ...data, url: data.url || undefined, notes: data.notes || undefined })
-        nav(`/vault/${id}`, { replace: true })
+        nav(`/app/vault/${id}`, { replace: true })
       } catch { /* toast shown by store */ } finally { setSaving(false) }
     }
 
     return (
       <div className="animate-fade-in">
         <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => nav(`/vault/${id}`)} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to password">
+          <button onClick={() => nav(`/app/vault/${id}`)} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to password">
             <ArrowLeft size={18} />
           </button>
           <div>
@@ -85,7 +85,7 @@ export default function VaultItemPage() {
   return (
     <div className="text-center py-16">
       <p className="text-text-muted">Password not found</p>
-      <button onClick={() => nav('/vault')} className="text-sm text-primary mt-2 cursor-pointer">Go back</button>
+      <button onClick={() => nav('/app/vault')} className="text-sm text-primary mt-2 cursor-pointer">Go back</button>
     </div>
   )
 }

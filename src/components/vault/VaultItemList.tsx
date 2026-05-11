@@ -130,10 +130,10 @@ export function VaultItemList() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <Button icon={<Plus size={16} />} onClick={() => nav('/vault/new')}>
+          <Button icon={<Plus size={16} />} onClick={() => nav('/app/vault/new')}>
             Add
           </Button>
-          <Button variant="ghost" size="sm" icon={<FileText size={14} />} onClick={() => nav('/vault/new-note')}>
+          <Button variant="ghost" size="sm" icon={<FileText size={14} />} onClick={() => nav('/app/vault/new-note')}>
             Note
           </Button>
           <Dropdown
@@ -234,7 +234,7 @@ export function VaultItemList() {
               key={item.id}
               item={item}
               category={categories.find((c) => c.id === item.categoryId)}
-              onClick={() => nav(`/vault/${item.id}`)}
+              onClick={() => nav(`/app/vault/${item.id}`)}
               selectable={selectMode}
               selected={selectedIds.has(item.id)}
               onToggleSelect={() => toggleSelect(item.id)}
@@ -248,7 +248,7 @@ export function VaultItemList() {
           title={searchQuery ? 'No results found' : 'No passwords yet'}
           description={searchQuery ? 'Try adjusting your search terms.' : 'Create your first password to securely store it in your vault.'}
           action={
-            <Button size="sm" icon={<Plus size={15} />} onClick={() => nav('/vault/new')}>
+            <Button size="sm" icon={<Plus size={15} />} onClick={() => nav('/app/vault/new')}>
               Add Password
             </Button>
           }
@@ -257,7 +257,7 @@ export function VaultItemList() {
 
       {/* Mobile FAB */}
       <button
-        onClick={() => nav('/vault/new')}
+        onClick={() => nav('/app/vault/new')}
         className="lg:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center cursor-pointer hover:bg-primary-hover transition-colors z-20"
         aria-label="Add password"
       >

@@ -66,7 +66,7 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
     setDeleting(true)
     try {
       await deleteItem(user.uid, item.id)
-      nav('/vault', { replace: true })
+      nav('/app/vault', { replace: true })
     } catch { /* toast shown by store */ } finally { setDeleting(false) }
   }
 
@@ -96,11 +96,11 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
     <div className="animate-fade-in">
       {/* Back button + Breadcrumb */}
       <div className="flex items-center gap-3 mb-4">
-        <button onClick={() => nav('/vault')} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to vault">
+        <button onClick={() => nav('/app/vault')} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to vault">
           <ArrowLeft size={18} />
         </button>
         <nav className="flex items-center gap-1.5 text-xs text-text-muted">
-          <button onClick={() => nav('/vault')} className="hover:text-text-primary transition-colors cursor-pointer">Vault</button>
+          <button onClick={() => nav('/app/vault')} className="hover:text-text-primary transition-colors cursor-pointer">Vault</button>
           <span>/</span>
           <span className="text-text-secondary truncate max-w-48">{item.title}</span>
         </nav>
@@ -127,7 +127,7 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
         </div>
         <div className="flex items-center gap-1.5">
           <Button variant="ghost" size="sm" icon={<FolderInput size={14} />} onClick={() => setShowMove(true)}>Move</Button>
-          <Button variant="ghost" size="sm" icon={<Pencil size={14} />} onClick={() => nav(`/vault/${item.id}/edit`)}>Edit</Button>
+          <Button variant="ghost" size="sm" icon={<Pencil size={14} />} onClick={() => nav(`/app/vault/${item.id}/edit`)}>Edit</Button>
           <Button variant="danger" size="sm" icon={<Trash2 size={14} />} onClick={() => setShowDelete(true)}>Delete</Button>
         </div>
       </div>

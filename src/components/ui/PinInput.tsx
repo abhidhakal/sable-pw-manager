@@ -58,16 +58,19 @@ export function PinInput({ length = 4, value, onChange, error, label, numericOnl
           <input
             key={i}
             ref={(el) => { inputRefs.current[i] = el }}
-            type="password"
+            type={numericOnly ? 'tel' : 'text'}
             inputMode={numericOnly ? 'numeric' : undefined}
+            pattern={numericOnly ? '[0-9]*' : undefined}
             value={v}
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
             onPaste={handlePaste}
-            autoComplete="off"
+            autoComplete="one-time-code"
             data-1p-ignore
             data-lpignore="true"
-            className={`w-12 h-14 text-center text-2xl font-bold rounded-lg border bg-surface transition-all
+            data-form-type="other"
+            aria-label={`Digit ${i + 1}`}
+            className={`w-12 h-14 text-center text-2xl font-bold rounded-lg border bg-surface text-text-primary transition-all [-webkit-text-security:disc]
               ${error ? 'border-danger focus:ring-danger/20' : 'border-border focus:border-primary focus:ring-primary/20'}
               focus:outline-none focus:ring-4`}
           />

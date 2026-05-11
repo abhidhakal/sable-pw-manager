@@ -128,7 +128,7 @@ export default function HealthPage() {
             {breachedItems.map((item) => (
               <div
                 key={item.id}
-                onClick={() => nav(`/vault/${item.id}`)}
+                onClick={() => nav(`/app/vault/${item.id}`)}
                 className="flex items-center justify-between px-3 py-2 rounded-md bg-danger/5 border border-danger/15 cursor-pointer hover:bg-danger/10 transition-colors"
               >
                 <span className="text-sm text-text-primary">{item.title}</span>
@@ -160,7 +160,7 @@ export default function HealthPage() {
               return (
                 <div
                   key={item.id}
-                  onClick={() => nav(`/vault/${item.id}`)}
+                  onClick={() => nav(`/app/vault/${item.id}`)}
                   className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-surface-elevated transition-colors cursor-pointer"
                 >
                   <span className="text-sm text-text-primary">{item.title}</span>
@@ -187,7 +187,7 @@ export default function HealthPage() {
                   {group.map((item) => (
                     <div
                       key={item.id}
-                      onClick={() => nav(`/vault/${item.id}`)}
+                      onClick={() => nav(`/app/vault/${item.id}`)}
                       className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-surface-elevated transition-colors cursor-pointer"
                     >
                       <span className="text-sm text-text-primary">{item.title}</span>
@@ -212,7 +212,7 @@ export default function HealthPage() {
             {report.oldPasswords.map((item) => (
               <div
                 key={item.id}
-                onClick={() => nav(`/vault/${item.id}`)}
+                onClick={() => nav(`/app/vault/${item.id}`)}
                 className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-surface-elevated transition-colors cursor-pointer"
               >
                 <span className="text-sm text-text-primary">{item.title}</span>

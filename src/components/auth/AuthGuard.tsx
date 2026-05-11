@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useVaultStore } from '@/stores/vaultStore'
 import { FullPageSpinner } from '@/components/ui/Spinner'
 
-const AUTH_PAGES = ['/login', '/signup']
+const PUBLIC_PAGES = ['/', '/login', '/signup']
 const SETUP_PAGE = '/setup-vault'
 const UNLOCK_PAGE = '/unlock'
 
@@ -40,27 +40,49 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     if (!initialized || checking) return
     const path = location.pathname
 
+    // Landing page is always accessible
+    if (path === '/') return
+
+    // Not logged in — only allow public pages
     if (!user) {
-      if (!AUTH_PAGES.includes(path)) nav('/login', { replace: true })
+      if (!PUBLIC_PAGES.includes(path)) nav('/login', { replace: true })
       return
     }
 
+    // User is authenticated — redirect login/signup to appropriate place
+    if (['/login', '/signup'].includes(path)) {
+      if (vaultExists === false) {
+        nav(SETUP_PAGE, { replace: true })
+      } else if (vaultExists === true && locked) {
+        nav(UNLOCK_PAGE, { replace: true })
+      } else {
+        nav('/app/vault', { replace: true })
+      }
+      return
+    }
+
+    // Handle vault state for app routes
     if (vaultExists === false) {
       if (path !== SETUP_PAGE) nav(SETUP_PAGE, { replace: true })
       return
     }
 
     if (vaultExists === true && locked) {
-      if (path !== UNLOCK_PAGE) nav(UNLOCK_PAGE, { replace: true })
+      if (path !== UNLOCK_PAGE && !PUBLIC_PAGES.includes(path)) nav(UNLOCK_PAGE, { replace: true })
       return
     }
 
-    if (!locked && [...AUTH_PAGES, SETUP_PAGE, UNLOCK_PAGE].includes(path)) {
-      nav('/vault', { replace: true })
+    // Vault is unlocked — redirect away from setup/unlock to the app
+    if (!locked && [SETUP_PAGE, UNLOCK_PAGE].includes(path)) {
+      nav('/app/vault', { replace: true })
     }
   }, [user, initialized, checking, vaultExists, locked, location.pathname, nav])
 
-  if (!initialized || checking) return <FullPageSpinner />
+  if (!initialized || checking) {
+    // Don't show spinner on the landing page
+    if (location.pathname === '/') return <>{children}</>
+    return <FullPageSpinner />
+  }
 
   return <>{children}</>
 }

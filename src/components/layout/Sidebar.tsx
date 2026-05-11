@@ -34,9 +34,9 @@ export function Sidebar({
 }: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const isOnVault = location.pathname.startsWith('/vault') || location.pathname === '/'
-  const isOnSettings = location.pathname.startsWith('/settings')
-  const isOnHealth = location.pathname.startsWith('/health')
+  const isOnVault = location.pathname.startsWith('/app/vault') || location.pathname === '/'
+  const isOnSettings = location.pathname.startsWith('/app/settings')
+  const isOnHealth = location.pathname.startsWith('/app/health')
   const { user } = useAuthStore()
   const { lockVault, items } = useVaultStore()
   const { theme, toggleTheme } = useThemeStore()
@@ -76,7 +76,7 @@ export function Sidebar({
         <button
           onClick={() => {
             onSelectCategory(null)
-            if (!location.pathname.startsWith('/vault')) navigate('/vault')
+            if (!location.pathname.startsWith('/app/vault')) navigate('/app/vault')
             onClose?.()
           }}
           className={`
@@ -97,7 +97,7 @@ export function Sidebar({
         {/* Health */}
         <button
           onClick={() => {
-            navigate('/health')
+            navigate('/app/health')
             onClose?.()
           }}
           className={`
@@ -143,7 +143,7 @@ export function Sidebar({
                   key={cat.id}
                   onClick={() => {
                     onSelectCategory(cat.id)
-                    if (!location.pathname.startsWith('/vault')) navigate('/vault')
+                    if (!location.pathname.startsWith('/app/vault')) navigate('/app/vault')
                     onClose?.()
                   }}
                   className={`
@@ -167,7 +167,7 @@ export function Sidebar({
 
             {/* Add category */}
             <button
-              onClick={() => navigate('/settings')}
+              onClick={() => navigate('/app/settings')}
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text-muted hover:text-text-secondary hover:bg-surface-elevated transition-all cursor-pointer"
             >
               <Plus size={15} />
@@ -180,7 +180,7 @@ export function Sidebar({
       {/* Bottom actions */}
       <div className="p-2.5 border-t border-border space-y-0.5">
         <button
-          onClick={() => navigate('/settings')}
+          onClick={() => navigate('/app/settings')}
           className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-all cursor-pointer
             ${isOnSettings
               ? 'bg-surface-elevated text-text-primary border border-border'

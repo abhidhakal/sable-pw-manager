@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 
+import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/pages/LoginPage'
 import SignupPage from '@/pages/SignupPage'
 import SetupVaultPage from '@/pages/SetupVaultPage'
@@ -28,15 +29,16 @@ export const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
+      { path: '/', element: <LandingPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/signup', element: <SignupPage /> },
       { path: '/setup-vault', element: <SetupVaultPage /> },
       { path: '/unlock', element: <UnlockPage /> },
       {
-        path: '/',
+        path: '/app',
         element: <AppLayout />,
         children: [
-          { index: true, element: <Navigate to="/vault" replace /> },
+          { index: true, element: <Navigate to="/app/vault" replace /> },
           { path: 'vault', element: <VaultPage /> },
           { path: 'vault/new', element: <VaultItemPage /> },
           { path: 'vault/new-note', element: <SecureNotePage /> },

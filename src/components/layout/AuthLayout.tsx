@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router'
+import { ArrowLeft } from 'lucide-react'
 
 interface AuthLayoutProps {
   children: ReactNode
@@ -16,6 +18,12 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
           backgroundSize: '40px 40px',
         }}
       />
+
+      {/* Home link */}
+      <Link to="/" className="fixed top-5 left-5 flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors z-10">
+        <ArrowLeft size={16} />
+        Home
+      </Link>
 
       <div className="w-full max-w-md relative">
         {/* Logo */}

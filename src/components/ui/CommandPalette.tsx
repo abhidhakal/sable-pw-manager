@@ -79,7 +79,7 @@ export function CommandPalette() {
       const item = results[selectedIndex]
       if (item) {
         setOpen(false)
-        nav(`/vault/${item.id}`)
+        nav(`/app/vault/${item.id}`)
       }
     } else if (e.key === 'Escape') {
       setOpen(false)
@@ -139,7 +139,7 @@ export function CommandPalette() {
                   key={item.id}
                   onClick={() => {
                     setOpen(false)
-                    nav(`/vault/${item.id}`)
+                    nav(`/app/vault/${item.id}`)
                   }}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors ${
                     i === selectedIndex ? 'bg-primary/10 text-text-primary' : 'text-text-secondary hover:bg-surface'
