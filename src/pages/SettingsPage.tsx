@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { LogOut, Shield, Key, FolderOpen, Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react'
+import { LogOut, Shield, Key, FolderOpen, Plus, Pencil, Trash2, AlertTriangle, Sun, Moon } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useVaultStore } from '@/stores/vaultStore'
+import { useThemeStore } from '@/stores/themeStore'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -20,6 +21,7 @@ export default function SettingsPage() {
   const nav = useNavigate()
   const { user, logout } = useAuthStore()
   const { categories, addCategory, updateCategory, deleteCategory, lockVault, clearVault } = useVaultStore()
+  const { theme, setTheme } = useThemeStore()
   const [showAddCat, setShowAddCat] = useState(false)
   const [editCat, setEditCat] = useState<(typeof categories)[0] | null>(null)
   const [deleteCat, setDeleteCat] = useState<(typeof categories)[0] | null>(null)
@@ -85,6 +87,38 @@ export default function SettingsPage() {
             <Button variant="secondary" size="sm" icon={<Key size={14} />} onClick={() => setShowChangePw(true)}>Change Master Password</Button>
             <Button variant="secondary" size="sm" icon={<Icons.Lock size={14} />} onClick={handleLock}>Lock Vault</Button>
           </div>
+        </div>
+      </Card>
+
+      {/* Appearance */}
+      <Card>
+        <div className="flex items-center gap-3 mb-4">
+          <Sun size={18} className="text-primary" />
+          <h3 className="text-sm font-semibold text-text-primary">Appearance</h3>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setTheme('light')}
+            className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-md border text-sm cursor-pointer transition-all ${
+              theme === 'light'
+                ? 'border-primary/30 bg-primary/5 text-primary'
+                : 'border-border text-text-secondary hover:border-border-focus'
+            }`}
+          >
+            <Sun size={16} />
+            Light
+          </button>
+          <button
+            onClick={() => setTheme('dark')}
+            className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-md border text-sm cursor-pointer transition-all ${
+              theme === 'dark'
+                ? 'border-primary/30 bg-primary/5 text-primary'
+                : 'border-border text-text-secondary hover:border-border-focus'
+            }`}
+          >
+            <Moon size={16} />
+            Dark
+          </button>
         </div>
       </Card>
 

@@ -4,7 +4,6 @@ import { ArrowLeft } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useVaultStore } from '@/stores/vaultStore'
 import { SecureNoteForm } from '@/components/vault/SecureNoteForm'
-import { Card } from '@/components/ui/Card'
 
 export default function SecureNotePage() {
   const nav = useNavigate()
@@ -26,21 +25,19 @@ export default function SecureNotePage() {
   }
 
   return (
-    <div className="max-w-lg animate-fade-in">
-      <div className="flex items-center gap-3 mb-4">
+    <div className="animate-fade-in">
+      <div className="flex items-center gap-3 mb-6">
         <button onClick={() => nav('/vault')} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to vault">
           <ArrowLeft size={18} />
         </button>
-        <nav className="flex items-center gap-1.5 text-xs text-text-muted">
-          <button onClick={() => nav('/vault')} className="hover:text-text-primary transition-colors cursor-pointer">Vault</button>
-          <span>/</span>
-          <span className="text-text-secondary">New Secure Note</span>
-        </nav>
+        <div>
+          <h2 className="text-lg font-semibold text-text-primary">New Secure Note</h2>
+          <p className="text-xs text-text-muted">Store recovery codes, API keys, or any sensitive text</p>
+        </div>
       </div>
-      <Card variant="elevated" padding="lg">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">New Secure Note</h2>
+      <div className="bg-surface border border-border rounded-xl p-6">
         <SecureNoteForm onSubmit={handleCreate} loading={saving} />
-      </Card>
+      </div>
     </div>
   )
 }

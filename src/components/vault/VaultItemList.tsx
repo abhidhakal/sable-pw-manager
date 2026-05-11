@@ -258,7 +258,7 @@ export function VaultItemList() {
       {/* Mobile FAB */}
       <button
         onClick={() => nav('/vault/new')}
-        className="lg:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-bg shadow-lg flex items-center justify-center cursor-pointer hover:bg-primary-hover transition-colors z-20"
+        className="lg:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center cursor-pointer hover:bg-primary-hover transition-colors z-20"
         aria-label="Add password"
       >
         <Plus size={24} />

@@ -32,7 +32,6 @@ export function SecureNoteForm({ initialData, onSubmit, loading }: SecureNoteFor
   })
 
   const handleFormSubmit = async (data: SecureNoteFormData) => {
-    // Store as a vault item with a special marker in username
     await onSubmit({
       title: data.title,
       username: '__secure_note__',
@@ -43,34 +42,37 @@ export function SecureNoteForm({ initialData, onSubmit, loading }: SecureNoteFor
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-      <Input label="Title" placeholder="e.g. Recovery Codes" error={errors.title?.message} {...register('title')} />
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-5">
+      {/* Title and category side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Input label="Title" placeholder="e.g. Recovery Codes" error={errors.title?.message} {...register('title')} />
 
-      {/* Category select */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-text-secondary">Category</label>
-        <select {...register('categoryId')} className="w-full h-10 px-3 bg-surface border border-border rounded-md text-sm text-text-primary focus:outline-none focus:border-primary cursor-pointer">
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>{cat.name}</option>
-          ))}
-        </select>
-        {errors.categoryId && <p className="text-xs text-danger">{errors.categoryId.message}</p>}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-text-secondary">Category</label>
+          <select {...register('categoryId')} className="w-full h-10 px-3 bg-surface border border-border rounded-md text-sm text-text-primary focus:outline-none focus:border-primary cursor-pointer">
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+          {errors.categoryId && <p className="text-xs text-danger">{errors.categoryId.message}</p>}
+        </div>
       </div>
 
-      {/* Content */}
+      {/* Content — full width, taller */}
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium text-text-secondary">Content</label>
         <textarea
           {...register('notes')}
-          rows={8}
+          rows={12}
           placeholder="Paste your recovery codes, API keys, or any secure text here..."
-          className="w-full px-3 py-2 bg-surface border border-border rounded-md text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary resize-none font-mono"
+          className="w-full px-3 py-3 bg-surface border border-border rounded-md text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary resize-y font-mono leading-relaxed"
         />
         {errors.notes && <p className="text-xs text-danger">{errors.notes.message}</p>}
       </div>
 
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" fullWidth loading={loading}>
+      {/* Submit */}
+      <div className="flex justify-end pt-2">
+        <Button type="submit" loading={loading} className="min-w-[160px]">
           {initialData ? 'Update Note' : 'Save Note'}
         </Button>
       </div>

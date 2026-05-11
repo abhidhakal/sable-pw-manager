@@ -2,12 +2,13 @@ import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import {
   Shield, Lock, Settings, Plus, ChevronDown, ChevronRight,
-  Activity,
+  Activity, Sun, Moon,
   type LucideIcon,
 } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useVaultStore } from '@/stores/vaultStore'
+import { useThemeStore } from '@/stores/themeStore'
 import { analyzePasswordHealth } from '@/lib/passwordHealth'
 import type { Category } from '@/types/vault'
 
@@ -38,6 +39,7 @@ export function Sidebar({
   const isOnHealth = location.pathname.startsWith('/health')
   const { user } = useAuthStore()
   const { lockVault, items } = useVaultStore()
+  const { theme, toggleTheme } = useThemeStore()
   const [categoriesExpanded, setCategoriesExpanded] = useState(true)
 
   const totalItems = Object.values(categoryItemCounts).reduce((a, b) => a + b, 0)
@@ -58,9 +60,7 @@ export function Sidebar({
       {/* Brand */}
       <div className="p-4 pb-3 border-b border-border">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <Shield size={18} className="text-primary" />
-          </div>
+          <img src="/logo.png" alt="Sable" className="w-9 h-9 rounded-md" />
           <div>
             <h1 className="text-sm font-semibold text-text-primary tracking-tight">Sable</h1>
             <p className="text-[10px] text-text-muted truncate max-w-35">
@@ -191,13 +191,22 @@ export function Sidebar({
           <Settings size={15} />
           Settings
         </button>
-        <button
-          onClick={handleLock}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-all cursor-pointer"
-        >
-          <Lock size={15} />
-          Lock Vault
-        </button>
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={handleLock}
+            className="flex-1 flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-all cursor-pointer"
+          >
+            <Lock size={15} />
+            Lock Vault
+          </button>
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer"
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+        </div>
       </div>
     </aside>
   )

@@ -70,7 +70,7 @@ export function VaultItemCard({ item, category, onClick, selectable, selected, o
               selected ? 'bg-primary border-primary' : 'border-border-hover bg-surface'
             }`}
           >
-            {selected && <Check size={14} className="text-bg" />}
+            {selected && <Check size={14} className="text-white" />}
           </div>
         </div>
       ) : (
@@ -117,14 +117,14 @@ export function VaultItemCard({ item, category, onClick, selectable, selected, o
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={(e) => handleCopy(item.username, 'Username', e)}
-            className="p-1.5 rounded-sm text-text-muted hover:text-text-primary hover:bg-bg transition-colors cursor-pointer"
+            className="p-1.5 rounded-sm text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer"
             title="Copy username"
           >
             {copiedField === 'Username' ? <Check size={14} className="text-success" /> : <Copy size={14} />}
           </button>
           <button
             onClick={(e) => handleCopy(item.password, 'Password', e)}
-            className="p-1.5 rounded-sm text-text-muted hover:text-text-primary hover:bg-bg transition-colors cursor-pointer"
+            className="p-1.5 rounded-sm text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer"
             title="Copy password"
           >
             {copiedField === 'Password' ? <Check size={14} className="text-success" /> : <Icons.KeyRound size={14} />}
@@ -135,7 +135,7 @@ export function VaultItemCard({ item, category, onClick, selectable, selected, o
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-sm text-text-muted hover:text-text-primary hover:bg-bg transition-colors"
+              className="p-1.5 rounded-sm text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors"
               title="Open URL"
             >
               <ExternalLink size={14} />
