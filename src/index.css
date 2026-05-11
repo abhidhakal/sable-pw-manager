@@ -3,17 +3,17 @@
 
 @theme {
   /* ── Color Palette ── */
-  --color-bg: #0B0F0E;
-  --color-surface: #121A17;
-  --color-surface-elevated: #18231F;
+  --color-bg: #0C0D0E;
+  --color-surface: #141516;
+  --color-surface-elevated: #1C1D1F;
   --color-primary: #D6A84F;
   --color-primary-hover: #E5BD68;
   --color-secondary: #6F8F7A;
   --color-text-primary: #F4F0E8;
   --color-text-secondary: #A8B3A9;
   --color-text-muted: #6F7B73;
-  --color-border: #26332E;
-  --color-border-focus: #3A4F46;
+  --color-border: #2A2B2E;
+  --color-border-focus: #3D3F44;
   --color-danger: #D96C5F;
   --color-danger-hover: #E07F74;
   --color-success: #7FAE82;
