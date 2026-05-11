@@ -1,56 +1,101 @@
-# Vault — Personal Password Manager
+<p align="center">
+  <img src="public/logo.png" alt="Sable" width="80" height="80" style="border-radius: 16px;" />
+</p>
 
-A zero-knowledge personal password vault built with React, TypeScript, and Firebase. Your master password never leaves your browser — all sensitive data is encrypted client-side with AES-256-GCM before being stored in Firestore.
+<h1 align="center">Sable Web</h1>
 
-## Security Architecture
+<p align="center">
+  <strong>A zero-knowledge password manager that respects your privacy.</strong>
+  <br />
+  Your master password never leaves your browser. We never see your data.
+</p>
 
-- **Key Derivation**: PBKDF2 with 600,000 iterations (SHA-256) derives a 256-bit AES key from your master password
-- **Encryption**: AES-256-GCM with a unique 12-byte IV per encryption operation
-- **Zero Knowledge**: Firebase only stores ciphertext — no plaintext passwords, usernames, URLs, or notes
-- **Master Password**: Never stored, never transmitted — used only locally to derive the encryption key
-- **Auto-lock**: Vault locks after 5 minutes of inactivity, wiping all decrypted data from memory
-- **Clipboard Security**: Copied passwords are automatically cleared from clipboard after 30 seconds
+<p align="center">
+  <img src="https://img.shields.io/badge/React-19-blue?logo=react" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-Strict-blue?logo=typescript" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Encryption-AES--256--GCM-green" alt="AES-256-GCM" />
+  <img src="https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-orange?logo=firebase" alt="Firebase" />
+</p>
+
+---
+
+## What is Sable?
+
+Sable is a personal password vault with end-to-end encryption. All sensitive data — passwords, usernames, URLs, notes — is encrypted client-side before it ever touches the server. Firebase stores only ciphertext. Even if the database is compromised, your data remains unreadable without your master password.
+
+## Features
+
+🔐 **Zero-Knowledge Encryption** — AES-256-GCM with PBKDF2 key derivation (600K iterations)
+
+🔑 **Password Generator** — Cryptographically random passwords with configurable length and character sets
+
+📂 **Categories** — Organize credentials with custom categories, icons, and colors
+
+🔍 **Instant Search** — Filter by title, username, or URL in real-time
+
+📋 **Secure Clipboard** — Auto-clears copied passwords after 30 seconds
+
+⏱️ **Auto-Lock** — Vault locks after 5 minutes of inactivity, wiping all decrypted data from memory
+
+📥 **CSV Import** — Multi-step import wizard with column mapping and preview
+
+🗑️ **Bulk Operations** — Multi-select and batch delete
+
+⭐ **Favorites** — Pin frequently used credentials to the top
+
+🛡️ **Rate Limiting** — Exponential backoff after failed unlock attempts
+
+## Security Model
+
+| Layer | Implementation |
+|-------|---------------|
+| Key Derivation | PBKDF2 · 600,000 iterations · SHA-256 |
+| Encryption | AES-256-GCM · unique 12-byte IV per operation |
+| Storage | Only ciphertext stored in Firestore |
+| Master Password | Never stored, never transmitted |
+| Session | 5-min inactivity lock · 4-hour max session |
+| Clipboard | Auto-clear after 30 seconds |
+| Auth | Firebase Auth with sanitized error messages (prevents account enumeration) |
 
 ## Tech Stack
 
-- React 19 + Vite 6
-- TypeScript (strict mode)
-- Firebase Auth + Cloud Firestore
-- Zustand (state management)
-- React Hook Form + Zod (form validation)
-- React Router v7
-- Tailwind CSS v4
-- Lucide React (icons)
-- Web Crypto API
+- **Framework** — React 19 + TypeScript (strict)
+- **Build** — Vite 8
+- **Styling** — Tailwind CSS 4 (custom dark theme)
+- **State** — Zustand 5
+- **Forms** — React Hook Form + Zod
+- **Routing** — React Router 7
+- **Backend** — Firebase Auth + Cloud Firestore
+- **Crypto** — Web Crypto API (native browser)
+- **Icons** — Lucide React
 
-## Setup
+## Getting Started
 
-### 1. Clone and install
+### Prerequisites
+
+- Node.js 18+
+- A Firebase project with Auth and Firestore enabled
+
+### Installation
 
 ```bash
-git clone <repo-url>
-cd pw-manager
+git clone https://github.com/your-username/sable.git
+cd sable/web
 npm install
 ```
 
-### 2. Create a Firebase project
+### Configuration
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project
-3. Enable **Authentication** → Email/Password provider
-4. Enable **Cloud Firestore** → Start in production mode
-5. Register a Web App and copy the config values
-
-### 3. Configure environment variables
+Create a `.env` file from the example:
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` with your Firebase config:
+Add your Firebase config:
 
-```
-VITE_FIREBASE_API_KEY=your_api_key_here
+```env
+VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
@@ -58,53 +103,86 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 ```
 
-### 4. Deploy Firestore security rules
+### Firebase Setup
 
-Copy `firestore.rules` to your Firebase project via the Firebase Console or CLI:
+1. Enable **Authentication** → Email/Password provider
+2. Enable **Cloud Firestore** in production mode
+3. Deploy security rules:
 
 ```bash
 npx firebase-tools deploy --only firestore:rules
 ```
 
-### 5. Run the app
+### Development
 
 ```bash
 npm run dev
 ```
 
-## App Flow
+### Build
 
-1. **Sign Up** → Create an account with email/password (Firebase Auth)
-2. **Setup Vault** → Create a master password (never stored anywhere)
-3. **Unlock** → Enter master password to derive encryption key and decrypt vault items
-4. **Use** → Add, view, edit, delete, search, and copy password items
-5. **Lock** → Vault locks on inactivity, logout, or manual lock — all decrypted data is wiped
+```bash
+npm run build
+npm run preview
+```
+
+## How It Works
+
+```
+Sign Up → Setup Master Password → Unlock Vault → Use → Auto-Lock
+```
+
+1. **Sign up** with email/password (Firebase Auth)
+2. **Create a master password** — a 256-bit AES key is derived via PBKDF2 and held in memory only
+3. **Unlock** — enter master password to decrypt your vault
+4. **Use** — add, view, edit, delete, search, and copy credentials
+5. **Lock** — vault locks on inactivity or manual lock, wiping all decrypted data from memory
 
 ## Project Structure
 
 ```
 src/
-  app/           → Router configuration
-  components/
-    ui/          → Reusable UI primitives (Button, Input, Card, Modal, etc.)
-    layout/      → App shell (Sidebar, Header, AuthLayout)
-    auth/        → Auth forms and guards
-    vault/       → Vault-specific components
-    categories/  → Category components
-  features/
-    auth/        → Firebase Auth service
-    vault/       → Vault Firestore services
-    categories/  → Category Firestore service
-  lib/
-    crypto.ts    → Zero-knowledge encryption module
-    clipboard.ts → Clipboard with auto-clear
-    firebase.ts  → Firebase initialization
-    passwordGenerator.ts → Crypto-random password generator
-  stores/        → Zustand state management
-  types/         → TypeScript type definitions
-  schemas/       → Zod validation schemas
-  pages/         → Route page components
+├── app/            Router configuration
+├── components/
+│   ├── ui/         Design system (Button, Input, Card, Modal, Badge, Toast...)
+│   ├── layout/     App shell (Sidebar, AppLayout, AuthLayout)
+│   ├── auth/       Auth guard and forms
+│   ├── vault/      Vault components (list, detail, form, generator, import)
+│   └── categories/ Category management
+├── features/
+│   ├── auth/       Firebase Auth service
+│   ├── vault/      Vault + metadata Firestore services
+│   └── categories/ Category Firestore service
+├── lib/
+│   ├── crypto.ts   Zero-knowledge encryption (AES-256-GCM + PBKDF2)
+│   ├── clipboard.ts Secure clipboard with auto-clear
+│   ├── firebase.ts Firebase initialization
+│   ├── passwordGenerator.ts Crypto-random password generation
+│   └── csvParser.ts CSV import parsing
+├── stores/         Zustand state (authStore, vaultStore)
+├── types/          TypeScript definitions
+├── schemas/        Zod validation schemas
+└── pages/          Route page components
 ```
+
+## Roadmap
+
+See [`docs/web-upgrade.md`](../docs/web-upgrade.md) for the full upgrade roadmap including:
+
+- Password health dashboard (weak, reused, old, compromised)
+- TOTP / 2FA code support
+- Browser extension for autofill
+- Encrypted export/backup
+- Offline PWA support
+- Secure sharing
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
