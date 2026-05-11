@@ -5,6 +5,7 @@ import * as vaultService from '@/features/vault/vaultService'
 import * as vaultMetaService from '@/features/vault/vaultMetaService'
 import * as categoryService from '@/features/categories/categoryService'
 import { toast } from '@/components/ui/Toast'
+import { recordPasswordChange, clearPasswordHistory, clearAllPasswordHistory } from '@/lib/passwordHistory'
 
 const AUTO_LOCK_MS = 5 * 60 * 1000 // 5 minutes
 const MAX_SESSION_MS = 4 * 60 * 60 * 1000 // 4 hours — hard limit regardless of activity
@@ -255,6 +256,12 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     const key = get().vaultKey
     if (!key) throw new Error('Vault is locked')
 
+    // Record password history if password changed
+    const existingItem = get().items.find((i) => i.id === itemId)
+    if (existingItem && existingItem.password !== item.password) {
+      recordPasswordChange(itemId, existingItem.password)
+    }
+
     set({ loading: true })
     try {
       const encrypted = await encryptVaultItem(item, key)
@@ -279,6 +286,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     set({ loading: true })
     try {
       await vaultService.deleteVaultItem(uid, itemId)
+      clearPasswordHistory(itemId)
       set((state) => ({
         items: state.items.filter((i) => i.id !== itemId),
       }))
@@ -398,6 +406,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
 
   clearVault: () => {
     get().clearAutoLock()
+    clearAllPasswordHistory()
     set({
       vaultKey: null,
       locked: true,

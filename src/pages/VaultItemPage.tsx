@@ -1,13 +1,12 @@
-// ... (Keep imports the same)
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
+import { ArrowLeft } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useVaultStore } from '@/stores/vaultStore'
 import { VaultItemDetail } from '@/components/vault/VaultItemDetail'
 import { VaultItemForm } from '@/components/vault/VaultItemForm'
 import type { VaultItemFormData } from '@/schemas/vaultSchemas'
 import { Card } from '@/components/ui/Card'
-import { ArrowLeft } from 'lucide-react'
 
 export default function VaultItemPage() {
   const { id } = useParams<{ id: string }>()
@@ -33,9 +32,16 @@ export default function VaultItemPage() {
 
     return (
       <div className="max-w-lg animate-fade-in">
-        <button onClick={() => nav('/vault')} className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary mb-4 transition-colors cursor-pointer">
-          <ArrowLeft size={16} /> Back to vault
-        </button>
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => nav('/vault')} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to vault">
+            <ArrowLeft size={18} />
+          </button>
+          <nav className="flex items-center gap-1.5 text-xs text-text-muted">
+            <button onClick={() => nav('/vault')} className="hover:text-text-primary transition-colors cursor-pointer">Vault</button>
+            <span>/</span>
+            <span className="text-text-secondary">New Password</span>
+          </nav>
+        </div>
         <Card variant="elevated" padding="lg">
           <h2 className="text-lg font-semibold text-text-primary mb-4">Add New Password</h2>
           <VaultItemForm onSubmit={handleCreate} loading={saving} />
@@ -57,9 +63,18 @@ export default function VaultItemPage() {
 
     return (
       <div className="max-w-lg animate-fade-in">
-        <button onClick={() => nav(`/vault/${id}`)} className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary mb-4 transition-colors cursor-pointer">
-          <ArrowLeft size={16} /> Back to password
-        </button>
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => nav(`/vault/${id}`)} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to password">
+            <ArrowLeft size={18} />
+          </button>
+          <nav className="flex items-center gap-1.5 text-xs text-text-muted">
+            <button onClick={() => nav('/vault')} className="hover:text-text-primary transition-colors cursor-pointer">Vault</button>
+            <span>/</span>
+            <button onClick={() => nav(`/vault/${id}`)} className="hover:text-text-primary transition-colors cursor-pointer truncate max-w-32">{item.title}</button>
+            <span>/</span>
+            <span className="text-text-secondary">Edit</span>
+          </nav>
+        </div>
         <Card variant="elevated" padding="lg">
           <h2 className="text-lg font-semibold text-text-primary mb-4">Edit Password</h2>
           <VaultItemForm initialData={item} onSubmit={handleUpdate} loading={saving} />

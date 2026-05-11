@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import { Copy, Check, Eye, EyeOff, ExternalLink, Pencil, Trash2, ArrowLeft, FolderInput } from 'lucide-react'
+import { Copy, Check, Eye, EyeOff, ExternalLink, Pencil, Trash2, FolderInput, Clock, History, ArrowLeft } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { VaultItem } from '@/types/vault'
@@ -9,8 +9,11 @@ import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
+import { ClipboardTimer } from '@/components/ui/ClipboardTimer'
+import { PasswordStrengthBar } from './PasswordStrengthBar'
 import { copyToClipboard } from '@/lib/clipboard'
 import { toast } from '@/components/ui/Toast'
+import { getPasswordHistory, formatHistoryDate } from '@/lib/passwordHistory'
 
 interface VaultItemDetailProps {
   item: VaultItem & { id: string }
@@ -20,25 +23,41 @@ function getCatIcon(name: string): LucideIcon {
   return (Icons as any)[name] || Icons.Folder
 }
 
+const PEEK_DURATION = 5000 // 5 seconds
+
 export function VaultItemDetail({ item }: VaultItemDetailProps) {
   const nav = useNavigate()
   const { user } = useAuthStore()
   const { categories, deleteItem, moveItemToCategory } = useVaultStore()
   const [showPw, setShowPw] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
+  const [copyTime, setCopyTime] = useState<number | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [showMove, setShowMove] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+
+  const history = useMemo(() => getPasswordHistory(item.id), [item.id])
 
   const category = useMemo(() => categories.find((c) => c.id === item.categoryId), [categories, item.categoryId])
   const CatIcon = category ? getCatIcon(category.icon) : Icons.Folder
+  const isSecureNote = item.username === '__secure_note__'
+
+  // Peek mode: auto-hide password after 5 seconds
+  useEffect(() => {
+    if (showPw) {
+      const timer = setTimeout(() => setShowPw(false), PEEK_DURATION)
+      return () => clearTimeout(timer)
+    }
+  }, [showPw])
 
   const copy = async (val: string, field: string) => {
     const ok = await copyToClipboard(val)
     if (ok) {
       setCopied(field)
-      toast.success(`${field} copied — clipboard clears in 30s`)
-      setTimeout(() => setCopied(null), 2000)
+      setCopyTime(Date.now())
+      toast.success(`${field} copied`)
+      setTimeout(() => setCopied(null), 30000)
     }
   }
 
@@ -59,19 +78,33 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
     } catch { /* toast shown by store */ }
   }
 
-  const fields = [
-    { label: 'Username', value: item.username, copyable: true },
-    { label: 'Password', value: item.password, copyable: true, secret: true },
-    { label: 'URL', value: item.url, copyable: true, isUrl: true },
-    { label: 'Notes', value: item.notes },
-  ]
+  // Calculate age
+  const lastUpdated = item.updatedAt?.toMillis?.() || (item.updatedAt as any)?.seconds * 1000 || item.createdAt?.toMillis?.() || (item.createdAt as any)?.seconds * 1000
+  const daysSinceUpdate = lastUpdated ? Math.floor((Date.now() - lastUpdated) / (1000 * 60 * 60 * 24)) : null
+  const isOld = daysSinceUpdate !== null && daysSinceUpdate > 90
+
+  const fields = isSecureNote
+    ? [{ label: 'Content', value: item.notes }]
+    : [
+        { label: 'Username', value: item.username, copyable: true },
+        { label: 'Password', value: item.password, copyable: true, secret: true },
+        { label: 'URL', value: item.url, copyable: true, isUrl: true },
+        { label: 'Notes', value: item.notes },
+      ]
 
   return (
-    <div className="max-w-2xl animate-fade-in">
-      {/* Back button */}
-      <button onClick={() => nav('/vault')} className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary mb-4 transition-colors cursor-pointer">
-        <ArrowLeft size={16} /> Back to vault
-      </button>
+    <div className="animate-fade-in">
+      {/* Back button + Breadcrumb */}
+      <div className="flex items-center gap-3 mb-4">
+        <button onClick={() => nav('/vault')} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to vault">
+          <ArrowLeft size={18} />
+        </button>
+        <nav className="flex items-center gap-1.5 text-xs text-text-muted">
+          <button onClick={() => nav('/vault')} className="hover:text-text-primary transition-colors cursor-pointer">Vault</button>
+          <span>/</span>
+          <span className="text-text-secondary truncate max-w-48">{item.title}</span>
+        </nav>
+      </div>
 
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
@@ -81,7 +114,15 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
           </div>
           <div>
             <h2 className="text-xl font-semibold text-text-primary">{item.title}</h2>
-            {category && <Badge color={category.color}>{category.name}</Badge>}
+            <div className="flex items-center gap-2 mt-0.5">
+              {category && <Badge color={category.color}>{category.name}</Badge>}
+              {isSecureNote && <Badge color="#A8B3A9">Secure Note</Badge>}
+              {isOld && (
+                <Badge color="#D96C5F">
+                  <Clock size={10} /> {daysSinceUpdate}d old
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
@@ -90,6 +131,13 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
           <Button variant="danger" size="sm" icon={<Trash2 size={14} />} onClick={() => setShowDelete(true)}>Delete</Button>
         </div>
       </div>
+
+      {/* Password strength */}
+      {!isSecureNote && (
+        <div className="mb-4">
+          <PasswordStrengthBar password={item.password} />
+        </div>
+      )}
 
       {/* Fields */}
       <div className="space-y-1 bg-surface border border-border rounded-lg divide-y divide-border">
@@ -111,7 +159,7 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
               </div>
               <div className="flex items-center gap-1 ml-3">
                 {f.secret && (
-                  <button onClick={() => setShowPw(!showPw)} className="p-1.5 rounded-sm text-text-muted hover:text-text-primary transition-colors cursor-pointer">
+                  <button onClick={() => setShowPw(!showPw)} className="p-1.5 rounded-sm text-text-muted hover:text-text-primary transition-colors cursor-pointer" title={showPw ? 'Hide (auto-hides in 5s)' : 'Peek (5s)'}>
                     {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 )}
@@ -125,6 +173,53 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
           )
         })}
       </div>
+
+      {/* Clipboard timer */}
+      {copied && copyTime && (
+        <div className="mt-3 flex items-center gap-2 text-xs text-text-muted">
+          <ClipboardTimer startTime={copyTime} onExpire={() => { setCopied(null); setCopyTime(null) }} />
+          <span>Clipboard will auto-clear</span>
+        </div>
+      )}
+
+      {/* Last updated info */}
+      {daysSinceUpdate !== null && (
+        <p className="text-xs text-text-muted mt-4">
+          Last updated {daysSinceUpdate === 0 ? 'today' : `${daysSinceUpdate} day${daysSinceUpdate === 1 ? '' : 's'} ago`}
+        </p>
+      )}
+
+      {/* Password history */}
+      {!isSecureNote && history.length > 0 && (
+        <div className="mt-4">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="flex items-center gap-2 text-xs text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
+          >
+            <History size={13} />
+            {history.length} previous password{history.length === 1 ? '' : 's'}
+          </button>
+          {showHistory && (
+            <div className="mt-2 space-y-1 p-3 bg-surface border border-border rounded-md">
+              {history.map((entry, i) => (
+                <div key={i} className="flex items-center justify-between py-1.5">
+                  <span className="text-xs font-mono text-text-muted">{'•'.repeat(12)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-text-muted">{formatHistoryDate(entry.changedAt)}</span>
+                    <button
+                      onClick={() => copy(entry.password, `Old password ${i + 1}`)}
+                      className="p-1 rounded text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+                      title="Copy old password"
+                    >
+                      <Copy size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Delete confirm */}
       <Modal open={showDelete} onClose={() => setShowDelete(false)} title="Delete Item" size="sm">

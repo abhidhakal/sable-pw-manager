@@ -1,12 +1,17 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router'
 import { Sidebar } from './Sidebar'
+import { CommandPalette } from '@/components/ui/CommandPalette'
 import { useVaultStore } from '@/stores/vaultStore'
 import { useAuthStore } from '@/stores/authStore'
 import { Menu, X } from 'lucide-react'
+import { toast } from '@/components/ui/Toast'
+
+const PRE_LOCK_WARNING_MS = 60_000 // Warn 60s before lock
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [preLockWarningShown, setPreLockWarningShown] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const { locked, resetAutoLock } = useVaultStore()
@@ -23,12 +28,30 @@ export function AppLayout() {
   useEffect(() => {
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart']
     const handler = () => {
-      if (!locked) resetAutoLock()
+      if (!locked) {
+        resetAutoLock()
+        setPreLockWarningShown(false)
+      }
     }
 
     events.forEach((e) => window.addEventListener(e, handler, { passive: true }))
     return () => events.forEach((e) => window.removeEventListener(e, handler))
   }, [locked, resetAutoLock])
+
+  // Pre-lock warning: show toast 60s before auto-lock
+  useEffect(() => {
+    if (locked || preLockWarningShown) return
+
+    const AUTO_LOCK_MS = 5 * 60 * 1000
+    const warningTimer = setTimeout(() => {
+      if (!useVaultStore.getState().locked) {
+        toast.warning('Vault will lock in 60 seconds due to inactivity')
+        setPreLockWarningShown(true)
+      }
+    }, AUTO_LOCK_MS - PRE_LOCK_WARNING_MS)
+
+    return () => clearTimeout(warningTimer)
+  }, [locked, preLockWarningShown])
 
   const categories = useVaultStore((s) => s.categories)
   const items = useVaultStore((s) => s.items)
@@ -88,6 +111,9 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Command Palette */}
+      <CommandPalette />
     </div>
   )
 }

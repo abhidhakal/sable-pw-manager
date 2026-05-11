@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import {
   Shield, Lock, Settings, Plus, ChevronDown, ChevronRight,
+  Activity,
   type LucideIcon,
 } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useVaultStore } from '@/stores/vaultStore'
+import { analyzePasswordHealth } from '@/lib/passwordHealth'
 import type { Category } from '@/types/vault'
 
 interface SidebarProps {
@@ -33,11 +35,18 @@ export function Sidebar({
   const location = useLocation()
   const isOnVault = location.pathname.startsWith('/vault') || location.pathname === '/'
   const isOnSettings = location.pathname.startsWith('/settings')
+  const isOnHealth = location.pathname.startsWith('/health')
   const { user } = useAuthStore()
-  const { lockVault } = useVaultStore()
+  const { lockVault, items } = useVaultStore()
   const [categoriesExpanded, setCategoriesExpanded] = useState(true)
 
   const totalItems = Object.values(categoryItemCounts).reduce((a, b) => a + b, 0)
+
+  // Health summary for badge
+  const healthReport = useMemo(() => analyzePasswordHealth(items), [items])
+  const issueCount = healthReport.weakPasswords.length +
+    Array.from(healthReport.reusedPasswords.values()).length +
+    healthReport.oldPasswords.length
 
   const handleLock = () => {
     lockVault()
@@ -53,7 +62,7 @@ export function Sidebar({
             <Shield size={18} className="text-primary" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold text-text-primary tracking-tight">Vault</h1>
+            <h1 className="text-sm font-semibold text-text-primary tracking-tight">Sable</h1>
             <p className="text-[10px] text-text-muted truncate max-w-35">
               {user?.email}
             </p>
@@ -83,6 +92,31 @@ export function Sidebar({
             All Items
           </span>
           <span className="text-xs opacity-70">{totalItems}</span>
+        </button>
+
+        {/* Health */}
+        <button
+          onClick={() => {
+            navigate('/health')
+            onClose?.()
+          }}
+          className={`
+            w-full flex items-center justify-between px-3 py-2 rounded-md text-sm
+            transition-all duration-(--transition-fast) cursor-pointer
+            ${isOnHealth
+              ? 'bg-primary/10 text-primary border border-primary/15'
+              : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'}
+          `}
+        >
+          <span className="flex items-center gap-2.5">
+            <Activity size={15} />
+            Password Health
+          </span>
+          {issueCount > 0 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-danger/15 text-danger font-medium">
+              {issueCount}
+            </span>
+          )}
         </button>
 
         {/* Categories header */}

@@ -13,6 +13,7 @@ interface VaultItemCardProps {
   selectable?: boolean
   selected?: boolean
   onToggleSelect?: () => void
+  compact?: boolean
 }
 
 const iconMap = Icons as any
@@ -25,8 +26,22 @@ function renderCategoryIcon(iconName: string, color: string | undefined) {
   })
 }
 
-export function VaultItemCard({ item, category, onClick, selectable, selected, onToggleSelect }: VaultItemCardProps) {
+function getFaviconUrl(url: string | undefined): string | null {
+  if (!url) return null
+  try {
+    const hostname = new URL(url.startsWith('http') ? url : `https://${url}`).hostname
+    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`
+  } catch {
+    return null
+  }
+}
+
+export function VaultItemCard({ item, category, onClick, selectable, selected, onToggleSelect, compact }: VaultItemCardProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [faviconError, setFaviconError] = useState(false)
+
+  const faviconUrl = getFaviconUrl(item.url)
+  const isSecureNote = item.username === '__secure_note__'
 
   const handleCopy = async (value: string, field: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -41,20 +56,18 @@ export function VaultItemCard({ item, category, onClick, selectable, selected, o
   return (
     <div
       onClick={selectable ? onToggleSelect : onClick}
-      className={`group flex items-center gap-4 p-3.5 bg-surface border rounded-lg transition-all duration-(--transition-base) cursor-pointer ${
+      className={`group flex items-center gap-4 ${compact ? 'p-2.5' : 'p-3.5'} bg-surface border rounded-lg transition-all duration-(--transition-base) cursor-pointer hover:shadow-sm hover:-translate-y-[1px] ${
         selected
           ? 'border-primary bg-primary/5'
           : 'border-border hover:border-border-focus hover:bg-surface-elevated'
       }`}
     >
-      {/* Checkbox or category icon */}
+      {/* Checkbox or icon */}
       {selectable ? (
         <div className="shrink-0">
           <div
             className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-              selected
-                ? 'bg-primary border-primary'
-                : 'border-border-hover bg-surface'
+              selected ? 'bg-primary border-primary' : 'border-border-hover bg-surface'
             }`}
           >
             {selected && <Check size={14} className="text-bg" />}
@@ -62,28 +75,45 @@ export function VaultItemCard({ item, category, onClick, selectable, selected, o
         </div>
       ) : (
         <div
-          className="w-10 h-10 rounded-md flex items-center justify-center shrink-0"
+          className={`${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-md flex items-center justify-center shrink-0 overflow-hidden`}
           style={{ backgroundColor: category ? `${category.color}15` : 'var(--color-surface-elevated)' }}
         >
-          {category ? renderCategoryIcon(category.icon, category.color) : <Folder size={18} className="text-text-muted" />}
+          {faviconUrl && !faviconError && !isSecureNote ? (
+            <img
+              src={faviconUrl}
+              alt=""
+              className="w-5 h-5"
+              onError={() => setFaviconError(true)}
+              loading="lazy"
+            />
+          ) : category ? (
+            renderCategoryIcon(category.icon, category.color)
+          ) : (
+            <Folder size={18} className="text-text-muted" />
+          )}
         </div>
       )}
 
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium text-text-primary truncate">{item.title}</h3>
-          {category && !selectable && (
+          <h3 className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-text-primary truncate`}>{item.title}</h3>
+          {isSecureNote && (
+            <Badge color="#A8B3A9" size="sm">Note</Badge>
+          )}
+          {category && !selectable && !compact && (
             <Badge color={category.color} size="sm" className="hidden sm:inline-flex">
               {category.name}
             </Badge>
           )}
         </div>
-        <p className="text-xs text-text-muted truncate mt-0.5">{item.username}</p>
+        <p className="text-xs text-text-muted truncate mt-0.5">
+          {isSecureNote ? 'Secure Note' : item.username}
+        </p>
       </div>
 
       {/* Actions — hidden in selection mode */}
-      {!selectable && (
+      {!selectable && !isSecureNote && (
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={(e) => handleCopy(item.username, 'Username', e)}

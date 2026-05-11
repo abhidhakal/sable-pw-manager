@@ -158,3 +158,7 @@ body {
 .animate-toast-out {
   animation: toast-out var(--transition-fast) both;
 }
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}

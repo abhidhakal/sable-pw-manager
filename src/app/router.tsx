@@ -8,7 +8,9 @@ import SetupVaultPage from '@/pages/SetupVaultPage'
 import UnlockPage from '@/pages/UnlockPage'
 import VaultPage from '@/pages/VaultPage'
 import VaultItemPage from '@/pages/VaultItemPage'
+import SecureNotePage from '@/pages/SecureNotePage'
 import SettingsPage from '@/pages/SettingsPage'
+import HealthPage from '@/pages/HealthPage'
 
 /**
  * Root layout wraps everything in the AuthGuard which
@@ -37,8 +39,10 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="/vault" replace /> },
           { path: 'vault', element: <VaultPage /> },
           { path: 'vault/new', element: <VaultItemPage /> },
+          { path: 'vault/new-note', element: <SecureNotePage /> },
           { path: 'vault/:id', element: <VaultItemPage /> },
           { path: 'vault/:id/edit', element: <VaultItemPage /> },
+          { path: 'health', element: <HealthPage /> },
           { path: 'settings', element: <SettingsPage /> },
         ],
       },

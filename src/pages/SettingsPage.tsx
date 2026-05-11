@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { LogOut, Shield, Key, FolderOpen, Plus, Pencil, Trash2 } from 'lucide-react'
+import { LogOut, Shield, Key, FolderOpen, Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
@@ -8,8 +8,8 @@ import { useVaultStore } from '@/stores/vaultStore'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
-import { PasswordGenerator } from '@/components/vault/PasswordGenerator'
 import { CategoryForm } from '@/components/categories/CategoryForm'
+import { ChangeMasterPassword } from '@/components/vault/ChangeMasterPassword'
 import type { CategoryFormData } from '@/schemas/vaultSchemas'
 
 function getCatIcon(name: string): LucideIcon {
@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const [editCat, setEditCat] = useState<(typeof categories)[0] | null>(null)
   const [deleteCat, setDeleteCat] = useState<(typeof categories)[0] | null>(null)
   const [catLoading, setCatLoading] = useState(false)
+  const [showChangePw, setShowChangePw] = useState(false)
 
   const handleLogout = async () => {
     clearVault()
@@ -64,7 +65,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-5xl space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       <h2 className="text-xl font-semibold text-text-primary mb-4">Settings</h2>
 
       {/* Account */}
@@ -80,9 +81,9 @@ export default function SettingsPage() {
               <p className="text-xs text-text-muted">{user?.email}</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="secondary" size="sm" icon={<Key size={14} />} onClick={handleLock}>Lock Vault</Button>
-            <Button variant="danger" size="sm" icon={<LogOut size={14} />} onClick={handleLogout}>Sign Out</Button>
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="secondary" size="sm" icon={<Key size={14} />} onClick={() => setShowChangePw(true)}>Change Master Password</Button>
+            <Button variant="secondary" size="sm" icon={<Icons.Lock size={14} />} onClick={handleLock}>Lock Vault</Button>
           </div>
         </div>
       </Card>
@@ -119,14 +120,25 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      {/* Password Generator */}
-      <Card>
+      {/* Danger Zone */}
+      <Card className="border-danger/20">
         <div className="flex items-center gap-3 mb-4">
-          <Key size={18} className="text-primary" />
-          <h3 className="text-sm font-semibold text-text-primary">Password Generator</h3>
+          <AlertTriangle size={18} className="text-danger" />
+          <h3 className="text-sm font-semibold text-text-primary">Danger Zone</h3>
         </div>
-        <PasswordGenerator />
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-text-primary">Sign Out</p>
+              <p className="text-xs text-text-muted">Lock vault and sign out of your account</p>
+            </div>
+            <Button variant="danger" size="sm" icon={<LogOut size={14} />} onClick={handleLogout}>Sign Out</Button>
+          </div>
+        </div>
       </Card>
+
+      {/* Change master password modal */}
+      <ChangeMasterPassword open={showChangePw} onClose={() => setShowChangePw(false)} />
 
       {/* Add category modal */}
       <Modal open={showAddCat} onClose={() => setShowAddCat(false)} title="New Category" size="sm">
