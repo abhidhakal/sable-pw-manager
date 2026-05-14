@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import {
   Shield, Lock, Settings, Plus, ChevronDown, ChevronRight,
-  Activity, Sun, Moon,
+  Activity, Sun, Moon, Link2,
   type LucideIcon,
 } from 'lucide-react'
 import * as Icons from 'lucide-react'
@@ -37,6 +37,7 @@ export function Sidebar({
   const isOnVault = location.pathname.startsWith('/app/vault') || location.pathname === '/'
   const isOnSettings = location.pathname.startsWith('/app/settings')
   const isOnHealth = location.pathname.startsWith('/app/health')
+  const isOnShared = location.pathname.startsWith('/app/shared')
   const { user } = useAuthStore()
   const { lockVault, items } = useVaultStore()
   const { theme, toggleTheme } = useThemeStore()
@@ -117,6 +118,26 @@ export function Sidebar({
               {issueCount}
             </span>
           )}
+        </button>
+
+        {/* Shared Links */}
+        <button
+          onClick={() => {
+            navigate('/app/shared')
+            onClose?.()
+          }}
+          className={`
+            w-full flex items-center justify-between px-3 py-2 rounded-md text-sm
+            transition-all duration-(--transition-fast) cursor-pointer
+            ${isOnShared
+              ? 'bg-primary/10 text-primary border border-primary/15'
+              : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'}
+          `}
+        >
+          <span className="flex items-center gap-2.5">
+            <Link2 size={15} />
+            Shared Links
+          </span>
         </button>
 
         {/* Categories header */}

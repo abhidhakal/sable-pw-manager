@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import { Copy, Check, Eye, EyeOff, ExternalLink, Pencil, Trash2, FolderInput, Clock, History, ArrowLeft } from 'lucide-react'
+import { Copy, Check, Eye, EyeOff, ExternalLink, Pencil, Trash2, FolderInput, Clock, History, ArrowLeft, Share2 } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { VaultItem } from '@/types/vault'
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
 import { ClipboardTimer } from '@/components/ui/ClipboardTimer'
 import { PasswordStrengthBar } from './PasswordStrengthBar'
+import { ShareModal } from './ShareModal'
 import { copyToClipboard } from '@/lib/clipboard'
 import { toast } from '@/components/ui/Toast'
 import { getPasswordHistory, formatHistoryDate } from '@/lib/passwordHistory'
@@ -36,6 +37,7 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
   const [showDelete, setShowDelete] = useState(false)
   const [showMove, setShowMove] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [showShare, setShowShare] = useState(false)
 
   const history = useMemo(() => getPasswordHistory(item.id), [item.id])
 
@@ -126,6 +128,7 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
           </div>
         </div>
         <div className="flex items-center gap-1.5">
+          <Button variant="ghost" size="sm" icon={<Share2 size={14} />} onClick={() => setShowShare(true)}>Share</Button>
           <Button variant="ghost" size="sm" icon={<FolderInput size={14} />} onClick={() => setShowMove(true)}>Move</Button>
           <Button variant="ghost" size="sm" icon={<Pencil size={14} />} onClick={() => nav(`/app/vault/${item.id}/edit`)}>Edit</Button>
           <Button variant="danger" size="sm" icon={<Trash2 size={14} />} onClick={() => setShowDelete(true)}>Delete</Button>
@@ -243,6 +246,9 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
           })}
         </div>
       </Modal>
+
+      {/* Share modal */}
+      <ShareModal open={showShare} onClose={() => setShowShare(false)} items={[item]} />
     </div>
   )
 }

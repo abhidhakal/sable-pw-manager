@@ -1,11 +1,12 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import { Plus, Search, Upload, Download, CheckSquare, Square, Trash2, X, List, LayoutGrid, ArrowUpDown, FileText } from 'lucide-react'
+import { Plus, Search, Upload, Download, CheckSquare, Square, Trash2, X, List, LayoutGrid, ArrowUpDown, FileText, Share2 } from 'lucide-react'
 import { useVaultStore } from '@/stores/vaultStore'
 import { useAuthStore } from '@/stores/authStore'
 import { VaultItemCard } from './VaultItemCard'
 import { ImportCSV } from './ImportCSV'
 import { ExportModal } from './ExportModal'
+import { ShareModal } from './ShareModal'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -21,6 +22,7 @@ export function VaultItemList() {
   const { user } = useAuthStore()
   const [showImport, setShowImport] = useState(false)
   const [showExport, setShowExport] = useState(false)
+  const [showShare, setShowShare] = useState(false)
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [deleting, setDeleting] = useState(false)
@@ -219,6 +221,16 @@ export function VaultItemList() {
             </Button>
           )}
           {selectedIds.size > 0 && (
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<Share2 size={14} />}
+              onClick={() => setShowShare(true)}
+            >
+              Share {selectedIds.size} password{selectedIds.size === 1 ? '' : 's'}
+            </Button>
+          )}
+          {selectedIds.size > 0 && (
             <span className="text-xs text-text-muted">
               {selectedIds.size} selected
             </span>
@@ -266,6 +278,11 @@ export function VaultItemList() {
 
       <ImportCSV open={showImport} onClose={() => setShowImport(false)} />
       <ExportModal open={showExport} onClose={() => setShowExport(false)} />
+      <ShareModal
+        open={showShare}
+        onClose={() => setShowShare(false)}
+        items={filteredItems.filter((item) => selectedIds.has(item.id))}
+      />
     </div>
   )
 }

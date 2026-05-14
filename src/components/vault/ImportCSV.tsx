@@ -115,7 +115,7 @@ export function ImportCSV({ open, onClose }: ImportCSVProps) {
       })
     }
 
-    const items = csvRowsToItems(headers, rows, mapping, importedCategoryId)
+    const items = csvRowsToItems(headers, rows, mapping, importedCategoryId, categories)
 
     if (items.length === 0) {
       setImportError('No valid rows to import')

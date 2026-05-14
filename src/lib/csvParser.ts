@@ -130,8 +130,17 @@ export function csvRowsToItems(
   rows: string[][],
   mapping: ImportMapping,
   defaultCategoryId: string,
+  categories?: { id: string; name: string }[],
 ): { username: string; password: string; title: string; url?: string; notes?: string; categoryId: string }[] {
   const items: { username: string; password: string; title: string; url?: string; notes?: string; categoryId: string }[] = []
+
+  // Build a lookup map for category names (case-insensitive)
+  const categoryByName = new Map<string, string>()
+  if (categories) {
+    for (const cat of categories) {
+      categoryByName.set(cat.name.toLowerCase(), cat.id)
+    }
+  }
 
   for (const row of rows) {
     const username = getCellValue(row, headers, mapping, 'username')?.trim()
@@ -142,8 +151,18 @@ export function csvRowsToItems(
     const url = getCellValue(row, headers, mapping, 'url')
     const notes = getCellValue(row, headers, mapping, 'notes')
     const titleFromCSV = getCellValue(row, headers, mapping, 'title')
+    const categoryFromCSV = getCellValue(row, headers, mapping, 'categoryId')?.trim()
 
     const title = titleFromCSV || deriveTitle(username, url)
+
+    // Use the CSV category if it matches an existing category, otherwise fall back to default
+    let categoryId = defaultCategoryId
+    if (categoryFromCSV) {
+      const matchedId = categoryByName.get(categoryFromCSV.toLowerCase())
+      if (matchedId) {
+        categoryId = matchedId
+      }
+    }
 
     items.push({
       username,
@@ -151,7 +170,7 @@ export function csvRowsToItems(
       title,
       url: url || undefined,
       notes: notes || undefined,
-      categoryId: defaultCategoryId,
+      categoryId,
     })
   }
 

@@ -12,6 +12,8 @@ import VaultItemPage from '@/pages/VaultItemPage'
 import SecureNotePage from '@/pages/SecureNotePage'
 import SettingsPage from '@/pages/SettingsPage'
 import HealthPage from '@/pages/HealthPage'
+import SharedLinksPage from '@/pages/SharedLinksPage'
+import ShareViewerPage from '@/pages/ShareViewerPage'
 
 /**
  * Root layout wraps everything in the AuthGuard which
@@ -26,6 +28,8 @@ function RootLayout() {
 }
 
 export const router = createBrowserRouter([
+  // Public share viewer — no auth required
+  { path: '/share/:linkId', element: <ShareViewerPage /> },
   {
     element: <RootLayout />,
     children: [
@@ -45,6 +49,7 @@ export const router = createBrowserRouter([
           { path: 'vault/:id', element: <VaultItemPage /> },
           { path: 'vault/:id/edit', element: <VaultItemPage /> },
           { path: 'health', element: <HealthPage /> },
+          { path: 'shared', element: <SharedLinksPage /> },
           { path: 'settings', element: <SettingsPage /> },
         ],
       },
