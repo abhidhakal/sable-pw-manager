@@ -9,6 +9,7 @@ import * as Icons from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useVaultStore } from '@/stores/vaultStore'
 import { useThemeStore } from '@/stores/themeStore'
+import { SupportPill } from '@/components/ui/SupportCard'
 import { analyzePasswordHealth } from '@/lib/passwordHealth'
 import type { Category } from '@/types/vault'
 
@@ -199,7 +200,10 @@ export function Sidebar({
       </nav>
 
       {/* Bottom actions */}
-      <div className="p-2.5 border-t border-border space-y-0.5">
+      <div className="p-2.5 border-t border-border space-y-2">
+        <div className="flex justify-center pb-1">
+          <SupportPill />
+        </div>
         <button
           onClick={() => navigate('/app/settings')}
           className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-all cursor-pointer

@@ -1,16 +1,21 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { LogOut, Shield, Key, FolderOpen, Plus, Pencil, Trash2, AlertTriangle, Sun, Moon } from 'lucide-react'
+import { LogOut, User, Key, FolderOpen, Plus, Pencil, Trash2, AlertTriangle, Sun, Moon, Lock as LockIcon } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth'
 import { useAuthStore } from '@/stores/authStore'
 import { useVaultStore } from '@/stores/vaultStore'
 import { useThemeStore } from '@/stores/themeStore'
+import { auth } from '@/lib/firebase'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
+import { SupportCard } from '@/components/ui/SupportCard'
 import { CategoryForm } from '@/components/categories/CategoryForm'
 import { ChangeMasterPassword } from '@/components/vault/ChangeMasterPassword'
+import { toast } from '@/components/ui/Toast'
 import type { CategoryFormData } from '@/schemas/vaultSchemas'
 
 function getCatIcon(name: string): LucideIcon {
@@ -27,6 +32,48 @@ export default function SettingsPage() {
   const [deleteCat, setDeleteCat] = useState<(typeof categories)[0] | null>(null)
   const [catLoading, setCatLoading] = useState(false)
   const [showChangePw, setShowChangePw] = useState(false)
+  const [showChangeAccountPw, setShowChangeAccountPw] = useState(false)
+  const [currentAccountPw, setCurrentAccountPw] = useState('')
+  const [newAccountPw, setNewAccountPw] = useState('')
+  const [confirmAccountPw, setConfirmAccountPw] = useState('')
+  const [accountPwLoading, setAccountPwLoading] = useState(false)
+  const [accountPwError, setAccountPwError] = useState<string | null>(null)
+
+  const handleChangeAccountPassword = async () => {
+    setAccountPwError(null)
+
+    if (newAccountPw.length < 6) {
+      setAccountPwError('New password must be at least 6 characters')
+      return
+    }
+    if (newAccountPw !== confirmAccountPw) {
+      setAccountPwError('Passwords do not match')
+      return
+    }
+
+    const currentUser = auth.currentUser
+    if (!currentUser || !currentUser.email) return
+
+    setAccountPwLoading(true)
+    try {
+      const credential = EmailAuthProvider.credential(currentUser.email, currentAccountPw)
+      await reauthenticateWithCredential(currentUser, credential)
+      await updatePassword(currentUser, newAccountPw)
+      toast.success('Account password changed')
+      setShowChangeAccountPw(false)
+      setCurrentAccountPw('')
+      setNewAccountPw('')
+      setConfirmAccountPw('')
+    } catch (err: any) {
+      if (err?.code === 'auth/wrong-password' || err?.code === 'auth/invalid-credential') {
+        setAccountPwError('Current password is incorrect')
+      } else {
+        setAccountPwError('Failed to change password. Try signing out and back in.')
+      }
+    } finally {
+      setAccountPwLoading(false)
+    }
+  }
 
   const handleLogout = async () => {
     clearVault()
@@ -73,7 +120,7 @@ export default function SettingsPage() {
       {/* Account */}
       <Card>
         <div className="flex items-center gap-3 mb-4">
-          <Shield size={18} className="text-primary" />
+          <User size={18} className="text-primary" />
           <h3 className="text-sm font-semibold text-text-primary">Account</h3>
         </div>
         <div className="space-y-3">
@@ -85,42 +132,50 @@ export default function SettingsPage() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button variant="secondary" size="sm" icon={<Key size={14} />} onClick={() => setShowChangePw(true)}>Change Master Password</Button>
+            <Button variant="secondary" size="sm" icon={<LockIcon size={14} />} onClick={() => setShowChangeAccountPw(true)}>Change Account Password</Button>
             <Button variant="secondary" size="sm" icon={<Icons.Lock size={14} />} onClick={handleLock}>Lock Vault</Button>
           </div>
         </div>
       </Card>
 
-      {/* Appearance */}
-      <Card>
-        <div className="flex items-center gap-3 mb-4">
-          <Sun size={18} className="text-primary" />
-          <h3 className="text-sm font-semibold text-text-primary">Appearance</h3>
+      {/* Appearance + Support row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-5 bg-surface border border-border rounded-xl flex flex-col">
+          <div className="flex items-center gap-3 mb-3">
+            <Sun size={18} className="text-primary" />
+            <h3 className="text-sm font-semibold text-text-primary">Appearance</h3>
+          </div>
+          <p className="text-xs text-text-muted leading-relaxed mb-4 flex-1">
+            Choose your preferred theme. Sable looks great in both.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setTheme('light')}
+              className={`flex-1 flex items-center justify-center gap-2 h-9 rounded-[var(--radius-sm)] border text-xs font-medium cursor-pointer transition-all ${
+                theme === 'light'
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-border text-text-secondary hover:border-border-focus'
+              }`}
+            >
+              <Sun size={13} />
+              Light
+            </button>
+            <button
+              onClick={() => setTheme('dark')}
+              className={`flex-1 flex items-center justify-center gap-2 h-9 rounded-[var(--radius-sm)] border text-xs font-medium cursor-pointer transition-all ${
+                theme === 'dark'
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-border text-text-secondary hover:border-border-focus'
+              }`}
+            >
+              <Moon size={13} />
+              Dark
+            </button>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setTheme('light')}
-            className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-md border text-sm cursor-pointer transition-all ${
-              theme === 'light'
-                ? 'border-primary/30 bg-primary/5 text-primary'
-                : 'border-border text-text-secondary hover:border-border-focus'
-            }`}
-          >
-            <Sun size={16} />
-            Light
-          </button>
-          <button
-            onClick={() => setTheme('dark')}
-            className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-md border text-sm cursor-pointer transition-all ${
-              theme === 'dark'
-                ? 'border-primary/30 bg-primary/5 text-primary'
-                : 'border-border text-text-secondary hover:border-border-focus'
-            }`}
-          >
-            <Moon size={16} />
-            Dark
-          </button>
-        </div>
-      </Card>
+
+        <SupportCard />
+      </div>
 
       {/* Categories */}
       <Card>
@@ -173,6 +228,41 @@ export default function SettingsPage() {
 
       {/* Change master password modal */}
       <ChangeMasterPassword open={showChangePw} onClose={() => setShowChangePw(false)} />
+
+      {/* Change account password modal */}
+      <Modal open={showChangeAccountPw} onClose={() => { setShowChangeAccountPw(false); setAccountPwError(null) }} title="Change Account Password" size="sm">
+        <div className="space-y-3">
+          {accountPwError && (
+            <div className="p-3 rounded-md bg-danger/10 border border-danger/20">
+              <p className="text-sm text-danger">{accountPwError}</p>
+            </div>
+          )}
+          <Input
+            type="password"
+            placeholder="Current password"
+            value={currentAccountPw}
+            onChange={(e) => setCurrentAccountPw(e.target.value)}
+          />
+          <Input
+            type="password"
+            placeholder="New password"
+            value={newAccountPw}
+            onChange={(e) => setNewAccountPw(e.target.value)}
+          />
+          <Input
+            type="password"
+            placeholder="Confirm new password"
+            value={confirmAccountPw}
+            onChange={(e) => setConfirmAccountPw(e.target.value)}
+          />
+          <div className="flex gap-2 pt-2">
+            <Button variant="secondary" fullWidth onClick={() => { setShowChangeAccountPw(false); setAccountPwError(null) }}>Cancel</Button>
+            <Button fullWidth loading={accountPwLoading} onClick={handleChangeAccountPassword} disabled={!currentAccountPw || !newAccountPw || !confirmAccountPw}>
+              Update Password
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Add category modal */}
       <Modal open={showAddCat} onClose={() => setShowAddCat(false)} title="New Category" size="sm">

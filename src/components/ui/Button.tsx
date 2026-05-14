@@ -16,7 +16,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   primary:
     'bg-primary text-white hover:bg-primary-hover active:brightness-90 shadow-sm',
   secondary:
-    'bg-surface-elevated text-text-primary hover:brightness-110 border border-border',
+    'bg-surface-elevated text-text-primary border border-border hover:border-border-focus hover:bg-surface active:brightness-95',
   ghost:
     'bg-transparent text-text-secondary hover:bg-surface-elevated hover:text-text-primary',
   danger:

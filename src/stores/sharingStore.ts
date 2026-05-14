@@ -52,7 +52,9 @@ export const useSharingStore = create<SharingState>((set) => ({
       })
 
       // Construct the share URL with secret in fragment
-      const baseUrl = window.location.origin
+      const baseUrl = typeof window !== 'undefined' && window.location
+        ? window.location.origin
+        : 'https://sable.app'
       const shareUrl = `${baseUrl}/share/${linkId}#${secret}`
 
       set({ generatedLink: shareUrl })

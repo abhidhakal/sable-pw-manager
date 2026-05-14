@@ -137,6 +137,9 @@ export default function LandingPage() {
         <div className="flex items-center justify-between">
           <p className="text-[13px] text-[#9A9A9A]">Sable</p>
           <div className="flex items-center gap-4">
+            <a href={import.meta.env.VITE_SUPPORT_URL || '#'} target="_blank" rel="noopener noreferrer" className="text-[13px] text-[#B8892E] hover:text-[#A07524] font-medium transition-colors">
+              ♥ Support Me
+            </a>
             <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-[13px] text-[#9A9A9A] hover:text-[#5A5A5A] transition-colors">
               GitHub
             </a>
