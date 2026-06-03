@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ShieldCheck } from 'lucide-react'
@@ -88,11 +88,16 @@ export function MasterPasswordUnlockForm({ onSubmit, loading, error, lockoutRema
   const [loggingIn, setLoggingIn] = useState(false)
 
   // Reset loggingIn on error or lockout
-  React.useEffect(() => {
+  const [prevError, setPrevError] = useState(error)
+  const [prevLockout, setPrevLockout] = useState(lockoutRemaining)
+
+  if (error !== prevError || lockoutRemaining !== prevLockout) {
+    setPrevError(error)
+    setPrevLockout(lockoutRemaining)
     if (error || (lockoutRemaining && lockoutRemaining > 0)) {
       setLoggingIn(false)
     }
-  }, [error, lockoutRemaining])
+  }
 
   const handleChange = (value: string) => {
     setMasterPassword(value)

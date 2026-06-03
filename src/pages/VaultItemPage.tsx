@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router'
+import { useParams, useNavigate, useLocation } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useVaultStore } from '@/stores/vaultStore'
@@ -14,8 +14,9 @@ export default function VaultItemPage() {
   const { items, addItem, updateItem } = useVaultStore()
   const [saving, setSaving] = useState(false)
 
-  const isNew = !id || id === 'new' || window.location.pathname.endsWith('/new')
-  const isEdit = window.location.pathname.endsWith('/edit')
+  const location = useLocation()
+  const isNew = !id || id === 'new' || location.pathname.endsWith('/new')
+  const isEdit = location.pathname.endsWith('/edit')
   const item = !isNew ? items.find((i) => i.id === id) : undefined
 
   // New item form

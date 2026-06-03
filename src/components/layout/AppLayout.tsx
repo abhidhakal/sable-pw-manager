@@ -4,7 +4,7 @@ import { Sidebar } from './Sidebar'
 import { CommandPalette } from '@/components/ui/CommandPalette'
 import { useVaultStore } from '@/stores/vaultStore'
 import { useAuthStore } from '@/stores/authStore'
-import { Menu, X } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { toast } from '@/components/ui/Toast'
 
 const PRE_LOCK_WARNING_MS = 60_000 // Warn 60s before lock
@@ -68,15 +68,6 @@ export function AppLayout() {
 
   return (
     <div className="h-screen flex bg-bg overflow-hidden">
-      {/* Mobile sidebar toggle */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-sm bg-surface-elevated border border-border text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
-        aria-label="Toggle sidebar"
-      >
-        {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
-
       {/* Sidebar overlay for mobile */}
       {sidebarOpen && (
         <div
@@ -106,7 +97,22 @@ export function AppLayout() {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 bg-bg">
+        {/* Mobile Header */}
+        <header className="lg:hidden flex items-center h-14 px-4 border-b border-border bg-surface shrink-0">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-1.5 -ml-1.5 mr-3 rounded-md text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors cursor-pointer"
+            aria-label="Open sidebar"
+          >
+            <Menu size={20} />
+          </button>
+          <div className="flex items-center gap-2.5">
+            <img src="/logo.png" alt="Sable" className="w-6 h-6 rounded-md" />
+            <span className="text-sm font-semibold text-text-primary tracking-tight">Sable</span>
+          </div>
+        </header>
+
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           <Outlet />
         </main>

@@ -11,7 +11,7 @@ const UNLOCK_PAGE = '/unlock'
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const nav = useNavigate()
-  const location = useLocation()
+  const { pathname } = useLocation()
   const { user, initialized, setUser, setInitialized } = useAuthStore()
   const { checkVaultExists, vaultExists, locked, clearVault } = useVaultStore()
   const [checking, setChecking] = useState(true)
@@ -38,10 +38,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   // Route guard logic
   useEffect(() => {
     if (!initialized || checking) return
-    const path = location.pathname
-
-    // Landing page is always accessible
-    if (path === '/') return
+    const path = pathname
 
     // Not logged in — only allow public pages
     if (!user) {
@@ -50,7 +47,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     }
 
     // User is authenticated — redirect login/signup to appropriate place
-    if (['/login', '/signup'].includes(path)) {
+    if (['/', '/login', '/signup'].includes(path)) {
       if (vaultExists === false) {
         nav(SETUP_PAGE, { replace: true })
       } else if (vaultExists === true && locked) {
@@ -76,11 +73,9 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     if (!locked && [SETUP_PAGE, UNLOCK_PAGE].includes(path)) {
       nav('/app/vault', { replace: true })
     }
-  }, [user, initialized, checking, vaultExists, locked, location.pathname, nav])
+  }, [user, initialized, checking, vaultExists, locked, pathname, nav])
 
   if (!initialized || checking) {
-    // Don't show spinner on the landing page
-    if (location.pathname === '/') return <>{children}</>
     return <FullPageSpinner />
   }
 

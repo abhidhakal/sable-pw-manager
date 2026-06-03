@@ -39,11 +39,13 @@ export function CommandPalette() {
 
   // Focus input when opened
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 50)
+      timeout = setTimeout(() => inputRef.current?.focus(), 50)
       setQuery('')
       setSelectedIndex(0)
     }
+    return () => clearTimeout(timeout)
   }, [open])
 
   const results = useMemo(() => {

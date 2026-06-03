@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import {
   Shield, Lock, Settings, Plus, ChevronDown, ChevronRight,
-  Activity, Sun, Moon, Link2,
+  Activity, Sun, Moon, Link2, X,
   type LucideIcon,
 } from 'lucide-react'
 import * as Icons from 'lucide-react'
@@ -60,16 +60,19 @@ export function Sidebar({
   return (
     <aside className="h-full bg-surface border-r border-border flex flex-col">
       {/* Brand */}
-      <div className="p-4 pb-3 border-b border-border">
+      <div className="p-4 pb-3 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <img src="/logo.png" alt="Sable" className="w-9 h-9 rounded-md" />
-          <div>
+          <div className="min-w-0">
             <h1 className="text-sm font-semibold text-text-primary tracking-tight">Sable</h1>
-            <p className="text-[10px] text-text-muted truncate max-w-35">
+            <p className="text-[10px] text-text-muted truncate max-w-[120px]">
               {user?.email}
             </p>
           </div>
         </div>
+        <button onClick={onClose} className="lg:hidden p-1.5 -mr-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer">
+          <X size={18} />
+        </button>
       </div>
 
       {/* Navigation */}
