@@ -8,9 +8,14 @@ export function Logo({ className }: LogoProps) {
   const { theme } = useThemeStore()
   return (
     <img
-      src={theme === 'dark' ? '/logo-black.png' : '/logo.png'}
+      src={theme === 'dark' ? '/logo-black-sm.png' : '/logo-sm.png'}
       alt="Sable"
       className={className}
+      width={48}
+      height={48}
+      loading="eager"
+      decoding="async"
+      fetchPriority="high"
     />
   )
 }
