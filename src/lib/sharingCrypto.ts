@@ -12,7 +12,7 @@
  * The server NEVER sees the plaintext or the decryption secret.
  */
 
-const SHARE_PBKDF2_ITERATIONS = 300_000
+const SHARE_PBKDF2_ITERATIONS = 600_000
 const KEY_LENGTH = 256
 const IV_LENGTH = 12
 const SALT_LENGTH = 16
@@ -162,5 +162,9 @@ export async function decryptSharePayload(
   )
 
   const json = new TextDecoder().decode(plaintextBuffer)
-  return JSON.parse(json) as ShareableItem[]
+  try {
+    return JSON.parse(json) as ShareableItem[]
+  } catch {
+    throw new Error('Share payload is corrupted or invalid')
+  }
 }

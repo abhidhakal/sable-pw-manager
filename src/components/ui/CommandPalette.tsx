@@ -101,7 +101,7 @@ export function CommandPalette() {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[15vh] p-4">
+    <div className="fixed inset-0 z-60 flex items-start justify-center pt-[15vh] p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"

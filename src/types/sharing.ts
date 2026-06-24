@@ -6,8 +6,8 @@ export interface SharedLink {
   encryptedPayload: string  // base64 ciphertext
   salt: string              // base64 salt for PBKDF2
   iv: string                // base64 IV for AES-GCM
+  encryptedSecret?: string  // secret key encrypted with vault key, for cross-device URL recovery
   itemCount: number
-  itemTitles: string[]      // encrypted titles for sender's reference (stored encrypted)
   createdAt?: Timestamp
   expiresAt: Timestamp
   maxViews: number | null   // null = unlimited

@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { Logo } from '@/components/ui/Logo'
 
 export default function LandingPage() {
   return (
@@ -7,7 +8,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-10 bg-bg/90 backdrop-blur-sm border-b border-border">
         <div className="max-w-[720px] mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Sable" className="w-7 h-7 rounded-md" />
+            <Logo className="w-7 h-7 rounded-md" />
             <span className="text-[15px] font-semibold text-text-primary">Sable</span>
           </div>
           <div className="flex items-center gap-4">

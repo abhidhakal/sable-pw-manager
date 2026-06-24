@@ -54,6 +54,30 @@ service cloud.firestore {
       }
     }
 
+    // Shared links — root-level collection (viewer is public, no auth required)
+    match /sharedLinks/{linkId} {
+      // Public read — ciphertext is useless without the URL-fragment secret
+      allow read: if true;
+
+      // Only authenticated users can create their own links
+      allow create: if request.auth != null
+                    && request.resource.data.creatorUid == request.auth.uid
+                    && request.resource.data.burned == false
+                    && request.resource.data.viewCount == 0
+                    && request.resource.data.keys().hasAll([
+                      'creatorUid', 'encryptedPayload', 'salt', 'iv', 'encryptedSecret',
+                      'itemCount', 'expiresAt', 'maxViews', 'viewCount', 'burned'
+                    ]);
+
+      // View recording: anyone may increment viewCount and flip burned, nothing else
+      allow update: if request.resource.data.diff(resource.data)
+                        .affectedKeys().hasOnly(['viewCount', 'burned']);
+
+      // Only creator can revoke (delete)
+      allow delete: if request.auth != null
+                    && resource.data.creatorUid == request.auth.uid;
+    }
+
     // Deny all other access
     match /{document=**} {
       allow read, write: if false;

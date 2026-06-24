@@ -36,8 +36,11 @@ export async function updateVaultItem(
   itemId: string,
   encrypted: Partial<EncryptedVaultItem>,
 ): Promise<void> {
+  // Exclude id/createdAt/updatedAt — createdAt must never change, updatedAt is set below,
+  // and id is a document path not a field.
+  const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = encrypted
   await updateDoc(itemDoc(uid, itemId), {
-    ...encrypted,
+    ...fields,
     updatedAt: serverTimestamp(),
   })
 }
@@ -55,6 +58,21 @@ export async function getAllVaultItems(uid: string): Promise<(EncryptedVaultItem
 }
 
 const BATCH_SIZE = 500
+
+export async function updateVaultItemsBatch(
+  uid: string,
+  updates: { itemId: string; encrypted: Partial<EncryptedVaultItem> }[],
+): Promise<void> {
+  for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+    const chunk = updates.slice(i, i + BATCH_SIZE)
+    const batch = writeBatch(db)
+    for (const { itemId, encrypted } of chunk) {
+      const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = encrypted
+      batch.update(itemDoc(uid, itemId), { ...fields, updatedAt: serverTimestamp() })
+    }
+    await batch.commit()
+  }
+}
 
 export async function deleteVaultItemsBatch(
   uid: string,

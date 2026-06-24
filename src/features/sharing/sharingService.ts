@@ -2,15 +2,15 @@ import {
   collection,
   doc,
   addDoc,
-  getDoc,
   getDocs,
-  updateDoc,
   deleteDoc,
+  writeBatch,
   query,
   where,
   orderBy,
   serverTimestamp,
   Timestamp,
+  runTransaction,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import type { SharedLink, ShareExpiration } from '@/types/sharing'
@@ -25,7 +25,6 @@ function sharedLinkDoc(linkId: string) {
   return doc(db, SHARED_LINKS_COLLECTION, linkId)
 }
 
-/** Calculate expiration timestamp from a duration option */
 function getExpirationTimestamp(expiration: ShareExpiration): Timestamp {
   const now = Date.now()
   const ms: Record<ShareExpiration, number> = {
@@ -36,14 +35,13 @@ function getExpirationTimestamp(expiration: ShareExpiration): Timestamp {
   return Timestamp.fromMillis(now + ms[expiration])
 }
 
-/** Create a new shared link document */
 export async function createSharedLink(params: {
   creatorUid: string
   encryptedPayload: string
   salt: string
   iv: string
+  encryptedSecret: string
   itemCount: number
-  itemTitles: string[]
   expiration: ShareExpiration
   maxViews: number | null
 }): Promise<string> {
@@ -52,8 +50,8 @@ export async function createSharedLink(params: {
     encryptedPayload: params.encryptedPayload,
     salt: params.salt,
     iv: params.iv,
+    encryptedSecret: params.encryptedSecret,
     itemCount: params.itemCount,
-    itemTitles: params.itemTitles,
     createdAt: serverTimestamp(),
     expiresAt: getExpirationTimestamp(params.expiration),
     maxViews: params.maxViews,
@@ -63,25 +61,36 @@ export async function createSharedLink(params: {
   return docRef.id
 }
 
-/** Fetch a shared link by ID (for the viewer page) */
-export async function getSharedLink(linkId: string): Promise<SharedLink | null> {
-  const snap = await getDoc(sharedLinkDoc(linkId))
-  if (!snap.exists()) return null
-  return { id: snap.id, ...snap.data() } as SharedLink
-}
+/**
+ * Atomically claim a view slot and return the link data.
+ * Increments viewCount inside a transaction so concurrent viewers
+ * can't both claim the last slot on a one-time link.
+ * Returns null if the link doesn't exist, is burned, or has expired.
+ */
+export async function claimAndGetSharedLink(linkId: string): Promise<SharedLink | null> {
+  return runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(sharedLinkDoc(linkId))
+    if (!snap.exists()) return null
 
-/** Increment view count and optionally burn the link */
-export async function recordView(linkId: string, maxViews: number | null, currentViewCount: number): Promise<void> {
-  const newCount = currentViewCount + 1
-  const shouldBurn = maxViews !== null && newCount >= maxViews
+    const data = snap.data() as Omit<SharedLink, 'id'>
 
-  await updateDoc(sharedLinkDoc(linkId), {
-    viewCount: newCount,
-    ...(shouldBurn ? { burned: true } : {}),
+    if (data.burned) return null
+
+    const expiresAtMs = data.expiresAt?.toMillis?.()
+    if (expiresAtMs && Date.now() > expiresAtMs) return null
+
+    const newCount = (data.viewCount || 0) + 1
+    const shouldBurn = data.maxViews !== null && newCount >= data.maxViews
+
+    transaction.update(sharedLinkDoc(linkId), {
+      viewCount: newCount,
+      ...(shouldBurn ? { burned: true } : {}),
+    })
+
+    return { id: snap.id, ...data }
   })
 }
 
-/** Get all shared links created by a user */
 export async function getUserSharedLinks(uid: string): Promise<SharedLink[]> {
   const q = query(
     sharedLinksCollection(),
@@ -92,7 +101,18 @@ export async function getUserSharedLinks(uid: string): Promise<SharedLink[]> {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as SharedLink))
 }
 
-/** Revoke (delete) a shared link */
 export async function revokeSharedLink(linkId: string): Promise<void> {
   await deleteDoc(sharedLinkDoc(linkId))
+}
+
+export async function deleteLinks(linkIds: string[]): Promise<void> {
+  const BATCH_SIZE = 500
+  for (let i = 0; i < linkIds.length; i += BATCH_SIZE) {
+    const chunk = linkIds.slice(i, i + BATCH_SIZE)
+    const batch = writeBatch(db)
+    for (const id of chunk) {
+      batch.delete(sharedLinkDoc(id))
+    }
+    await batch.commit()
+  }
 }

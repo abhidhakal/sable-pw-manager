@@ -7,7 +7,7 @@ import * as categoryService from '@/features/categories/categoryService'
 import { toast } from '@/components/ui/Toast'
 import { recordPasswordChange, clearPasswordHistory, clearAllPasswordHistory } from '@/lib/passwordHistory'
 
-const AUTO_LOCK_MS = 5 * 60 * 1000 // 5 minutes
+export const AUTO_LOCK_MS = 5 * 60 * 1000 // 5 minutes
 const MAX_SESSION_MS = 4 * 60 * 60 * 1000 // 4 hours — hard limit regardless of activity
 const MAX_UNLOCK_ATTEMPTS = 5
 const BASE_LOCKOUT_MS = 30_000 // 30 seconds base lockout
@@ -167,14 +167,21 @@ export const useVaultStore = create<VaultState>((set, get) => ({
         throw new Error('Invalid master password')
       }
 
-      // Load and decrypt all items
+      // Load and decrypt all items — use allSettled so one corrupted item doesn't block the vault
       const encryptedItems = await vaultService.getAllVaultItems(uid)
-      const decryptedItems = await Promise.all(
+      const results = await Promise.allSettled(
         encryptedItems.map(async (enc) => ({
           ...(await decryptVaultItem(enc, key)),
           id: enc.id,
         })),
       )
+      const decryptedItems = results
+        .filter((r): r is PromiseFulfilledResult<VaultItem & { id: string }> => r.status === 'fulfilled')
+        .map((r) => r.value)
+      const failedCount = results.filter((r) => r.status === 'rejected').length
+      if (failedCount > 0) {
+        toast.warning(`${failedCount} item${failedCount > 1 ? 's' : ''} could not be decrypted and were skipped`)
+      }
 
       const categories = await categoryService.getAllCategories(uid)
 
@@ -215,6 +222,17 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     const key = get().vaultKey
     if (!key) throw new Error('Vault is locked')
 
+    const isDuplicate = get().items.some(
+      (i) =>
+        i.title.toLowerCase() === item.title.toLowerCase() &&
+        i.username === item.username &&
+        i.password === item.password,
+    )
+    if (isDuplicate) {
+      toast.error('A password with the same title, username, and password already exists')
+      throw new Error('Duplicate item')
+    }
+
     set({ loading: true })
     try {
       const encrypted = await encryptVaultItem(item, key)
@@ -225,7 +243,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       toast.success('Password saved')
       return id
     } catch (err) {
-      toast.error('Failed to save password')
+      if ((err as Error).message !== 'Duplicate item') toast.error('Failed to save password')
       throw err
     } finally {
       set({ loading: false })
@@ -236,13 +254,33 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     const key = get().vaultKey
     if (!key) throw new Error('Vault is locked')
 
+    const existing = get().items
+    const unique = items.filter(
+      (item) =>
+        !existing.some(
+          (i) =>
+            i.title.toLowerCase() === item.title.toLowerCase() &&
+            i.username === item.username &&
+            i.password === item.password,
+        ),
+    )
+    const skipped = items.length - unique.length
+
+    if (unique.length === 0) {
+      toast.warning(`All ${items.length} items already exist in your vault — nothing imported`)
+      return []
+    }
+
     set({ loading: true })
     try {
-      const encrypted = await Promise.all(items.map((item) => encryptVaultItem(item, key)))
+      const encrypted = await Promise.all(unique.map((item) => encryptVaultItem(item, key)))
       const ids = await vaultService.createVaultItemsBatch(uid, encrypted)
-      const newItems = items.map((item, i) => ({ ...item, id: ids[i] }))
+      const newItems = unique.map((item, i) => ({ ...item, id: ids[i] }))
       set((state) => ({ items: [...state.items, ...newItems] }))
       get().resetAutoLock()
+      if (skipped > 0) {
+        toast.warning(`${skipped} duplicate${skipped > 1 ? 's' : ''} skipped, ${unique.length} imported`)
+      }
       return ids
     } catch (err) {
       toast.error('Failed to import passwords')
@@ -255,6 +293,18 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   updateItem: async (uid, itemId, item) => {
     const key = get().vaultKey
     if (!key) throw new Error('Vault is locked')
+
+    const isDuplicate = get().items.some(
+      (i) =>
+        i.id !== itemId &&
+        i.title.toLowerCase() === item.title.toLowerCase() &&
+        i.username === item.username &&
+        i.password === item.password,
+    )
+    if (isDuplicate) {
+      toast.error('Another password with the same title, username, and password already exists')
+      throw new Error('Duplicate item')
+    }
 
     // Record password history if password changed
     const existingItem = get().items.find((i) => i.id === itemId)
@@ -272,7 +322,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       get().resetAutoLock()
       toast.success('Password updated')
     } catch (err) {
-      toast.error('Failed to update password')
+      if ((err as Error).message !== 'Duplicate item') toast.error('Failed to update password')
       throw err
     } finally {
       set({ loading: false })
@@ -328,13 +378,18 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     if (!item) throw new Error('Password not found')
 
     const updatedItem = { ...item, categoryId }
-    const encrypted = await encryptVaultItem(updatedItem, key)
-    await vaultService.updateVaultItem(uid, itemId, encrypted)
-    set((state) => ({
-      items: state.items.map((i) => (i.id === itemId ? { ...updatedItem, id: itemId } : i)),
-    }))
-    get().resetAutoLock()
-    toast.success('Password moved')
+    try {
+      const encrypted = await encryptVaultItem(updatedItem, key)
+      await vaultService.updateVaultItem(uid, itemId, encrypted)
+      set((state) => ({
+        items: state.items.map((i) => (i.id === itemId ? { ...updatedItem, id: itemId } : i)),
+      }))
+      get().resetAutoLock()
+      toast.success('Password moved')
+    } catch (err) {
+      toast.error('Failed to move password')
+      throw err
+    }
   },
 
   loadCategories: async (uid) => {

@@ -8,6 +8,7 @@ import {
 import * as Icons from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useVaultStore } from '@/stores/vaultStore'
+import { Logo } from '@/components/ui/Logo'
 import { useThemeStore } from '@/stores/themeStore'
 import { SupportPill } from '@/components/ui/SupportCard'
 import { analyzePasswordHealth } from '@/lib/passwordHealth'
@@ -62,7 +63,7 @@ export function Sidebar({
       {/* Brand */}
       <div className="p-4 pb-3 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="Sable" className="w-9 h-9 rounded-md" />
+          <Logo className="w-9 h-9 rounded-md" />
           <div className="min-w-0">
             <h1 className="text-sm font-semibold text-text-primary tracking-tight">Sable</h1>
             <p className="text-[10px] text-text-muted truncate max-w-[120px]">

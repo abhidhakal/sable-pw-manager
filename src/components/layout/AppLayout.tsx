@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router'
 import { Sidebar } from './Sidebar'
 import { CommandPalette } from '@/components/ui/CommandPalette'
-import { useVaultStore } from '@/stores/vaultStore'
+import { useVaultStore, AUTO_LOCK_MS } from '@/stores/vaultStore'
+import { Logo } from '@/components/ui/Logo'
 import { useAuthStore } from '@/stores/authStore'
 import { Menu } from 'lucide-react'
 import { toast } from '@/components/ui/Toast'
@@ -42,7 +43,6 @@ export function AppLayout() {
   useEffect(() => {
     if (locked || preLockWarningShown) return
 
-    const AUTO_LOCK_MS = 5 * 60 * 1000
     const warningTimer = setTimeout(() => {
       if (!useVaultStore.getState().locked) {
         toast.warning('Vault will lock in 60 seconds due to inactivity')
@@ -108,7 +108,7 @@ export function AppLayout() {
             <Menu size={20} />
           </button>
           <div className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Sable" className="w-6 h-6 rounded-md" />
+            <Logo className="w-6 h-6 rounded-md" />
             <span className="text-sm font-semibold text-text-primary tracking-tight">Sable</span>
           </div>
         </header>

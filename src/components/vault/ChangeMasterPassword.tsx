@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { deriveVaultKey, verifyKey, generateSalt, createVerifier, encryptVaultItem } from '@/lib/crypto'
 import * as vaultMetaService from '@/features/vault/vaultMetaService'
 import * as vaultService from '@/features/vault/vaultService'
+
 import { toast } from '@/components/ui/Toast'
 
 interface ChangeMasterPasswordProps {
@@ -91,18 +92,22 @@ export function ChangeMasterPassword({ open, onClose }: ChangeMasterPasswordProp
       const newKey = await deriveVaultKey(newPw, newSalt)
       const newVerifier = await createVerifier(newKey)
 
-      // Re-encrypt all items with new key
+      // Encrypt all items in memory first — no Firestore writes yet
       setProgress({ current: 0, total: items.length })
+      let done = 0
+      const encrypted = await Promise.all(
+        items.map(async (item) => {
+          const enc = await encryptVaultItem(item, newKey)
+          done++
+          setProgress({ current: done, total: items.length })
+          return { itemId: item.id as string, encrypted: enc }
+        }),
+      )
 
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i]
-        const encrypted = await encryptVaultItem(item, newKey)
-        await vaultService.updateVaultItem(user.uid, item.id, encrypted)
-        setProgress({ current: i + 1, total: items.length })
-      }
-
-      // Update vault metadata with new salt and verifier
-      await vaultMetaService.createVaultMeta(user.uid, newSalt, newVerifier)
+      // Atomically batch-write all re-encrypted items, then update vault meta.
+      // If the batch fails, vault meta is untouched and old key still works.
+      await vaultService.updateVaultItemsBatch(user.uid, encrypted)
+      await vaultMetaService.updateVaultMeta(user.uid, newSalt, newVerifier)
 
       // Lock vault to force re-unlock with new password
       useVaultStore.getState().lockVault()

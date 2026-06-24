@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link2, Trash2, Clock, Eye, AlertTriangle, Copy, Check } from 'lucide-react'
+import { Link2, Trash2, Clock, Eye, AlertTriangle, CheckSquare, Square, Copy, Check } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useSharingStore } from '@/stores/sharingStore'
 import { Button } from '@/components/ui/Button'
@@ -28,35 +28,59 @@ function isExpired(expiresAt: any): boolean {
 
 export default function SharedLinksPage() {
   const { user } = useAuthStore()
-  const { sharedLinks, loadingLinks, loadSharedLinks, revokeLink } = useSharingStore()
-  const [revokeTarget, setRevokeTarget] = useState<string | null>(null)
-  const [revoking, setRevoking] = useState(false)
+  const { sharedLinks, loadingLinks, linkSecrets, loadSharedLinks, revokeLink, deleteLinks } = useSharingStore()
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (user?.uid) {
-      loadSharedLinks(user.uid)
-    }
+    if (user?.uid) loadSharedLinks(user.uid)
   }, [user?.uid, loadSharedLinks])
 
-  const handleRevoke = async () => {
-    if (!revokeTarget) return
-    setRevoking(true)
+  useEffect(() => {
+    setSelectedIds(new Set())
+  }, [sharedLinks])
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
     try {
-      await revokeLink(revokeTarget)
-      setRevokeTarget(null)
+      await revokeLink(deleteTarget)
+      setDeleteTarget(null)
     } finally {
-      setRevoking(false)
+      setDeleting(false)
     }
   }
 
+  const handleBulkDelete = async () => {
+    setDeleting(true)
+    try {
+      await deleteLinks(Array.from(selectedIds))
+      setBulkDeleteOpen(false)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
   const handleCopyLink = async (linkId: string) => {
-    // We can't reconstruct the secret (it was only shown at creation time)
-    // So we just copy the link ID for reference
-    const ok = await copyToClipboard(`${window.location.origin}/share/${linkId}`)
+    const secret = linkSecrets[linkId]
+    if (!secret) return
+    const url = `${window.location.origin}/share/${linkId}#${secret}`
+    const ok = await copyToClipboard(url)
     if (ok) {
       setCopiedId(linkId)
-      toast.info('Link copied (without decryption key — share the original link)')
+      toast.success('Link copied')
       setTimeout(() => setCopiedId(null), 3000)
     }
   }
@@ -64,11 +88,39 @@ export default function SharedLinksPage() {
   const activeLinks = sharedLinks.filter((l) => !l.burned && !isExpired(l.expiresAt))
   const expiredLinks = sharedLinks.filter((l) => l.burned || isExpired(l.expiresAt))
 
+  const selectAllExpired = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      expiredLinks.forEach((l) => l.id && next.add(l.id))
+      return next
+    })
+  }
+
+  const selectionCount = selectedIds.size
+
   return (
     <div className="animate-fade-in space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-text-primary">Shared Links</h2>
-        <p className="text-sm text-text-muted mt-0.5">Manage your active and expired share links</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-text-primary">Shared Links</h2>
+          <p className="text-sm text-text-muted mt-0.5">Manage your active and expired share links</p>
+        </div>
+        {selectionCount > 0 && (
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-sm text-text-muted">{selectionCount} selected</span>
+            <Button variant="secondary" size="sm" onClick={() => setSelectedIds(new Set())}>
+              Clear
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              icon={<Trash2 size={14} />}
+              onClick={() => setBulkDeleteOpen(true)}
+            >
+              Delete {selectionCount}
+            </Button>
+          </div>
+        )}
       </div>
 
       {loadingLinks ? (
@@ -92,96 +144,174 @@ export default function SharedLinksPage() {
                 Active ({activeLinks.length})
               </h3>
               <div className="space-y-2">
-                {activeLinks.map((link) => (
-                  <div
-                    key={link.id}
-                    className="flex items-center gap-4 p-4 bg-surface border border-border rounded-lg"
-                  >
-                    <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                      <Link2 size={16} className="text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text-primary truncate">
-                        {link.itemTitles?.join(', ') || `${link.itemCount} item${link.itemCount === 1 ? '' : 's'}`}
-                      </p>
-                      <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-xs text-text-muted flex items-center gap-1">
-                          <Clock size={10} /> {formatExpiry(link.expiresAt)}
-                        </span>
-                        <span className="text-xs text-text-muted flex items-center gap-1">
-                          <Eye size={10} /> {link.viewCount} view{link.viewCount === 1 ? '' : 's'}
-                          {link.maxViews ? ` / ${link.maxViews} max` : ''}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
+                {activeLinks.map((link) => {
+                  const id = link.id!
+                  const selected = selectedIds.has(id)
+                  return (
+                    <div
+                      key={id}
+                      className={`flex items-center gap-4 p-4 bg-surface border rounded-lg transition-colors ${selected ? 'border-primary/50 bg-primary/5' : 'border-border'}`}
+                    >
                       <button
-                        onClick={() => handleCopyLink(link.id!)}
-                        className="p-2 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer"
-                        title="Copy link (without key)"
+                        onClick={() => toggleSelect(id)}
+                        className="text-text-muted hover:text-text-primary transition-colors cursor-pointer shrink-0"
                       >
-                        {copiedId === link.id ? <Check size={14} className="text-success" /> : <Copy size={14} />}
+                        {selected ? (
+                          <CheckSquare size={16} className="text-primary" />
+                        ) : (
+                          <Square size={16} />
+                        )}
                       </button>
+                      <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                        <Link2 size={16} className="text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-text-primary truncate">
+                          {link.itemCount} item{link.itemCount === 1 ? '' : 's'}
+                        </p>
+                        <div className="flex items-center gap-3 mt-0.5">
+                          <span className="text-xs text-text-muted flex items-center gap-1">
+                            <Clock size={10} /> {formatExpiry(link.expiresAt)}
+                          </span>
+                          <span className="text-xs text-text-muted flex items-center gap-1">
+                            <Eye size={10} /> {link.viewCount} view{link.viewCount === 1 ? '' : 's'}
+                            {link.maxViews ? ` / ${link.maxViews} max` : ''}
+                          </span>
+                        </div>
+                        {linkSecrets[id] ? (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <span className="text-xs text-text-muted font-mono truncate max-w-[200px]">
+                              {`${window.location.origin}/share/${id}#…`}
+                            </span>
+                            <button
+                              onClick={() => handleCopyLink(id)}
+                              className="p-0.5 rounded text-text-muted hover:text-text-primary transition-colors cursor-pointer shrink-0"
+                              title="Copy share link"
+                            >
+                              {copiedId === id ? (
+                                <Check size={12} className="text-success" />
+                              ) : (
+                                <Copy size={12} />
+                              )}
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-text-muted mt-1.5 italic">
+                            URL unavailable — re-open vault to restore
+                          </p>
+                        )}
+                      </div>
                       <button
-                        onClick={() => setRevokeTarget(link.id!)}
+                        onClick={() => setDeleteTarget(id)}
                         className="p-2 rounded-md text-text-muted hover:text-danger hover:bg-danger/5 transition-colors cursor-pointer"
-                        title="Revoke link"
+                        title="Delete link"
                       >
                         <Trash2 size={14} />
                       </button>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
 
-          {/* Expired links */}
+          {/* Expired / Burned links */}
           {expiredLinks.length > 0 && (
             <div>
-              <h3 className="text-xs text-text-muted uppercase tracking-wider mb-2">
-                Expired / Burned ({expiredLinks.length})
-              </h3>
-              <div className="space-y-2 opacity-60">
-                {expiredLinks.map((link) => (
-                  <div
-                    key={link.id}
-                    className="flex items-center gap-4 p-4 bg-surface border border-border rounded-lg"
-                  >
-                    <div className="w-9 h-9 rounded-md bg-surface-elevated flex items-center justify-center shrink-0">
-                      <AlertTriangle size={16} className="text-text-muted" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-text-muted truncate">
-                        {link.itemTitles?.join(', ') || `${link.itemCount} item${link.itemCount === 1 ? '' : 's'}`}
-                      </p>
-                      <span className="text-xs text-text-muted">
-                        {link.burned ? 'Burned (viewed)' : 'Expired'}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setRevokeTarget(link.id!)}
-                      className="p-2 rounded-md text-text-muted hover:text-danger hover:bg-danger/5 transition-colors cursor-pointer"
-                      title="Delete"
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs text-text-muted uppercase tracking-wider">
+                  Expired / Burned ({expiredLinks.length})
+                </h3>
+                <button
+                  onClick={selectAllExpired}
+                  className="text-xs text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+                >
+                  Select all expired
+                </button>
+              </div>
+              <div className="space-y-2">
+                {expiredLinks.map((link) => {
+                  const id = link.id!
+                  const selected = selectedIds.has(id)
+                  return (
+                    <div
+                      key={id}
+                      className={`flex items-center gap-4 p-4 bg-surface border rounded-lg transition-colors opacity-60 ${selected ? 'border-primary/50 !opacity-80' : 'border-border'}`}
                     >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
+                      <button
+                        onClick={() => toggleSelect(id)}
+                        className="text-text-muted hover:text-text-primary transition-colors cursor-pointer shrink-0"
+                      >
+                        {selected ? (
+                          <CheckSquare size={16} className="text-primary" />
+                        ) : (
+                          <Square size={16} />
+                        )}
+                      </button>
+                      <div className="w-9 h-9 rounded-md bg-surface-elevated flex items-center justify-center shrink-0">
+                        <AlertTriangle size={16} className="text-text-muted" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-text-muted truncate">
+                          {link.itemCount} item{link.itemCount === 1 ? '' : 's'}
+                        </p>
+                        <span className="text-xs text-text-muted">
+                          {link.burned ? 'Burned (viewed)' : 'Expired'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setDeleteTarget(id)}
+                        className="p-2 rounded-md text-text-muted hover:text-danger hover:bg-danger/5 transition-colors cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
         </>
       )}
 
-      {/* Revoke confirmation */}
-      <Modal open={!!revokeTarget} onClose={() => setRevokeTarget(null)} title="Revoke Share Link" size="sm">
+      {/* Single delete confirmation */}
+      <Modal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete Share Link"
+        size="sm"
+      >
         <p className="text-sm text-text-secondary mb-4">
-          This will permanently delete the shared link. Anyone with the link will no longer be able to view the credentials.
+          Permanently delete this share link. Anyone with the link will no longer be able to view the credentials.
         </p>
         <div className="flex gap-2">
-          <Button variant="secondary" fullWidth onClick={() => setRevokeTarget(null)}>Cancel</Button>
-          <Button variant="danger" fullWidth loading={revoking} onClick={handleRevoke}>Revoke</Button>
+          <Button variant="secondary" fullWidth onClick={() => setDeleteTarget(null)}>
+            Cancel
+          </Button>
+          <Button variant="danger" fullWidth loading={deleting} onClick={handleDelete}>
+            Delete
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Bulk delete confirmation */}
+      <Modal
+        open={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        title="Delete Selected Links"
+        size="sm"
+      >
+        <p className="text-sm text-text-secondary mb-4">
+          Permanently delete {selectionCount} link{selectionCount === 1 ? '' : 's'}. Anyone with these links will no longer be able to access the shared credentials.
+        </p>
+        <div className="flex gap-2">
+          <Button variant="secondary" fullWidth onClick={() => setBulkDeleteOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" fullWidth loading={deleting} onClick={handleBulkDelete}>
+            Delete {selectionCount}
+          </Button>
         </div>
       </Modal>
     </div>

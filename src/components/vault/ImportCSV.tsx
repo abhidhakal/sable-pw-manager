@@ -26,7 +26,7 @@ const FIELD_LABELS: Record<ImportableField, string> = {
 const REQUIRED_FIELDS: ImportableField[] = ['username', 'password']
 
 export function ImportCSV({ open, onClose }: ImportCSVProps) {
-  const { categories, addItems, addCategory } = useVaultStore()
+  const { categories, items: vaultItems, addItems, addCategory } = useVaultStore()
   const { user } = useAuthStore()
 
   const [step, setStep] = useState<Step>('upload')
@@ -37,6 +37,7 @@ export function ImportCSV({ open, onClose }: ImportCSVProps) {
   const [preview, setPreview] = useState<ImportPreview | null>(null)
   const [importProgress, setImportProgress] = useState({ current: 0, total: 0 })
   const [importError, setImportError] = useState<string | null>(null)
+  const [importResult, setImportResult] = useState({ imported: 0, skipped: 0 })
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -49,6 +50,7 @@ export function ImportCSV({ open, onClose }: ImportCSVProps) {
     setPreview(null)
     setImportProgress({ current: 0, total: 0 })
     setImportError(null)
+    setImportResult({ imported: 0, skipped: 0 })
   }
 
   const handleClose = () => {
@@ -115,25 +117,55 @@ export function ImportCSV({ open, onClose }: ImportCSVProps) {
       })
     }
 
-    const items = csvRowsToItems(headers, rows, mapping, importedCategoryId, categories)
+    const allItems = csvRowsToItems(headers, rows, mapping, importedCategoryId, categories)
 
-    if (items.length === 0) {
+    if (allItems.length === 0) {
       setImportError('No valid rows to import')
       return
     }
 
+    // 1. Deduplicate within the CSV itself (same title+username+password appearing more than once)
+    const seenInBatch = new Set<string>()
+    const batchUnique = allItems.filter((item) => {
+      const key = `${item.title.toLowerCase()}|||${item.username}|||${item.password}`
+      if (seenInBatch.has(key)) return false
+      seenInBatch.add(key)
+      return true
+    })
+
+    // 2. Deduplicate against existing vault items (all three fields must match to be a duplicate)
+    const toImport = batchUnique.filter(
+      (item) =>
+        !vaultItems.some(
+          (v) =>
+            v.title.toLowerCase() === item.title.toLowerCase() &&
+            v.username === item.username &&
+            v.password === item.password,
+        ),
+    )
+
+    const skipped = allItems.length - toImport.length
+
+    if (toImport.length === 0) {
+      setImportError(
+        `All ${allItems.length} item${allItems.length > 1 ? 's' : ''} already exist in your vault — nothing imported`,
+      )
+      return
+    }
+
     setStep('importing')
-    setImportProgress({ current: 0, total: items.length })
+    setImportProgress({ current: 0, total: toImport.length })
     setImportError(null)
 
     try {
       const CHUNK_SIZE = 50
-      for (let i = 0; i < items.length; i += CHUNK_SIZE) {
-        const chunk = items.slice(i, i + CHUNK_SIZE)
+      for (let i = 0; i < toImport.length; i += CHUNK_SIZE) {
+        const chunk = toImport.slice(i, i + CHUNK_SIZE)
         await addItems(user.uid, chunk)
-        setImportProgress({ current: Math.min(i + CHUNK_SIZE, items.length), total: items.length })
+        setImportProgress({ current: Math.min(i + CHUNK_SIZE, toImport.length), total: toImport.length })
       }
 
+      setImportResult({ imported: toImport.length, skipped })
       setStep('done')
     } catch (err) {
       setImportError(err instanceof Error ? err.message : 'Import failed')
@@ -313,7 +345,12 @@ export function ImportCSV({ open, onClose }: ImportCSVProps) {
           <div>
             <div className="text-sm text-text-primary font-medium">Import complete</div>
             <div className="text-xs text-text-muted mt-1">
-              Successfully imported {importProgress.total} passwords
+              {importResult.imported} password{importResult.imported !== 1 ? 's' : ''} imported
+              {importResult.skipped > 0 && (
+                <span className="text-warning ml-1">
+                  · {importResult.skipped} duplicate{importResult.skipped !== 1 ? 's' : ''} skipped (same title, username &amp; password already in vault)
+                </span>
+              )}
             </div>
           </div>
           <Button onClick={handleClose}>Done</Button>

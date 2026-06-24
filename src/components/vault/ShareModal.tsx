@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Copy, Check, Link2, Shield, Clock, Eye, AlertTriangle } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
@@ -32,6 +32,16 @@ export function ShareModal({ open, onClose, items }: ShareModalProps) {
   const [expiration, setExpiration] = useState<ShareExpiration>('24h')
   const [viewLimit, setViewLimit] = useState<ShareViewLimit>('once')
   const [copied, setCopied] = useState(false)
+
+  // Reset state when modal is opened fresh (transition from closed → open)
+  const prevOpenRef = useRef(false)
+  useEffect(() => {
+    if (open && !prevOpenRef.current) {
+      clearGeneratedLink()
+      setCopied(false)
+    }
+    prevOpenRef.current = open
+  }, [open, clearGeneratedLink])
 
   const handleGenerate = async () => {
     if (!user) return
