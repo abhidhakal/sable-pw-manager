@@ -207,6 +207,11 @@ export const useVaultStore = create<VaultState>((set, get) => ({
 
   lockVault: () => {
     get().clearAutoLock()
+    // Remember where the user was so unlocking can return them there,
+    // regardless of what triggered the lock (button, auto-lock, session cap).
+    if (typeof window !== 'undefined' && window.location.pathname !== '/unlock') {
+      sessionStorage.setItem('sable:lastPath', window.location.pathname)
+    }
     // Wipe all decrypted data from memory
     set({
       vaultKey: null,

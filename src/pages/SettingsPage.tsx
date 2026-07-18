@@ -152,7 +152,7 @@ export default function SettingsPage() {
           <div className="flex gap-3">
             <button
               onClick={() => setTheme('light')}
-              className={`flex-1 flex items-center justify-center gap-2 h-9 rounded-[var(--radius-sm)] border text-xs font-medium cursor-pointer transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 h-9 rounded-sm border text-xs font-medium cursor-pointer transition-all ${
                 theme === 'light'
                   ? 'border-primary bg-primary text-white'
                   : 'border-border text-text-secondary hover:border-border-focus'
@@ -163,7 +163,7 @@ export default function SettingsPage() {
             </button>
             <button
               onClick={() => setTheme('dark')}
-              className={`flex-1 flex items-center justify-center gap-2 h-9 rounded-[var(--radius-sm)] border text-xs font-medium cursor-pointer transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 h-9 rounded-sm border text-xs font-medium cursor-pointer transition-all ${
                 theme === 'dark'
                   ? 'border-primary bg-primary text-white'
                   : 'border-border text-text-secondary hover:border-border-focus'

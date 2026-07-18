@@ -74,7 +74,7 @@ export function VaultItemForm({ initialData, onSubmit, loading }: VaultItemFormP
 
       {/* Submit */}
       <div className="flex justify-end pt-2">
-        <Button type="submit" loading={loading} className="min-w-[160px]">
+        <Button type="submit" loading={loading} className="min-w-40">
           {initialData ? 'Update Password' : 'Save Password'}
         </Button>
       </div>

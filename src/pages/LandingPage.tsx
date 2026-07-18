@@ -70,15 +70,15 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative max-w-6xl mx-auto px-6 lg:px-8 pt-20 pb-20 lg:pt-28 text-center overflow-hidden">
         <div
-          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-[500px] -z-10 opacity-60"
+          className="absolute -top-32 left-1/2 -translate-x-1/2 w-225 h-125 -z-10 opacity-60"
           style={{
             background: 'radial-gradient(ellipse at center, color-mix(in srgb, var(--color-primary) 14%, transparent) 0%, color-mix(in srgb, var(--color-secondary) 10%, transparent) 45%, transparent 70%)',
           }}
         />
-        <h1 className="font-display text-[40px] sm:text-[52px] lg:text-[60px] font-semibold text-text-primary leading-[1.08] tracking-tight max-w-[800px] mx-auto">
+        <h1 className="font-display text-[40px] sm:text-[52px] lg:text-[60px] font-semibold text-text-primary leading-[1.08] tracking-tight max-w-200 mx-auto">
           Your passwords, encrypted on your device.
         </h1>
-        <p className="text-lg sm:text-xl text-text-secondary mt-6 leading-relaxed max-w-[560px] mx-auto">
+        <p className="text-lg sm:text-xl text-text-secondary mt-6 leading-relaxed max-w-140 mx-auto">
           Sable encrypts everything in your browser before it ever touches our servers. No master password is transmitted, not to us, not to anyone.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4 mt-9">
@@ -108,7 +108,7 @@ export default function LandingPage() {
       {/* How it works */}
       <div className="bg-surface">
       <section className="max-w-6xl mx-auto px-6 lg:px-8 py-24">
-        <div className="max-w-[560px] mx-auto text-center mb-16">
+        <div className="max-w-140 mx-auto text-center mb-16">
           <h2 className="text-sm font-medium text-primary uppercase tracking-wider mb-3">How it works</h2>
           <p className="font-display text-[28px] sm:text-[34px] font-semibold text-text-primary tracking-tight">
             Three steps to a locked-down vault
@@ -136,7 +136,7 @@ export default function LandingPage() {
 
       {/* Why Sable */}
       <section className="max-w-6xl mx-auto px-6 lg:px-8 py-24">
-        <div className="max-w-[560px] mx-auto text-center mb-16">
+        <div className="max-w-140 mx-auto text-center mb-16">
           <h2 className="text-sm font-medium text-primary uppercase tracking-wider mb-3">Why Sable</h2>
           <p className="font-display text-[28px] sm:text-[34px] font-semibold text-text-primary tracking-tight">
             Built for people who don't trust the cloud with their secrets
@@ -167,7 +167,7 @@ export default function LandingPage() {
             <p className="font-display text-[28px] sm:text-[34px] font-semibold text-text-primary tracking-tight leading-tight">
               The specifics, in case you're checking
             </p>
-            <p className="text-[15px] text-text-secondary mt-4 leading-relaxed max-w-[440px]">
+            <p className="text-[15px] text-text-secondary mt-4 leading-relaxed max-w-110">
               Every detail of how your data is protected. No marketing fluff, just the mechanisms.
             </p>
           </div>
@@ -203,7 +203,7 @@ export default function LandingPage() {
           <p className="relative font-display text-[32px] sm:text-[40px] font-semibold text-white tracking-tight leading-tight">
             Stop reusing passwords.
           </p>
-          <p className="relative text-[15px] sm:text-base text-white/85 mt-3 max-w-[460px] mx-auto">
+          <p className="relative text-[15px] sm:text-base text-white/85 mt-3 max-w-115 mx-auto">
             Set up your encrypted vault in under a minute. Generate strong, unique passwords for every account and let Sable remember them.
           </p>
           <div className="relative flex flex-wrap items-center justify-center gap-4 mt-9">

@@ -37,7 +37,7 @@ export function AppMockup() {
         </div>
       </div>
 
-      <div className="flex h-[560px]">
+      <div className="flex h-140">
         {/* Sidebar */}
         <div className="w-56 shrink-0 border-r border-border bg-surface hidden sm:flex flex-col">
           <div className="p-4 pb-3 border-b border-border flex items-center gap-2.5">

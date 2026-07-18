@@ -119,7 +119,7 @@ export function AppLayout() {
       </div>
 
       {/* Command Palette */}
-      <CommandPalette />
+      <CommandPalette onNavigate={() => setSidebarOpen(false)} />
     </div>
   )
 }

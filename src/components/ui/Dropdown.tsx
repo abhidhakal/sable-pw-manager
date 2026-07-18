@@ -29,7 +29,7 @@ export function Dropdown({ trigger, children, align = 'right', className = '' }:
       {open && (
         <div
           className={`
-            absolute top-full mt-1.5 z-50 min-w-[180px]
+            absolute top-full mt-1.5 z-50 min-w-45
             bg-surface-elevated border border-border rounded-md
             shadow-lg animate-slide-down overflow-hidden
             ${align === 'right' ? 'right-0' : 'left-0'}

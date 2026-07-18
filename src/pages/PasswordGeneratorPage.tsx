@@ -265,7 +265,7 @@ export default function PasswordGeneratorPage() {
 
       {/* Why strong passwords matter */}
       <section className="max-w-6xl mx-auto px-6 lg:px-8 py-24">
-        <div className="max-w-[560px] mx-auto text-center mb-16">
+        <div className="max-w-140 mx-auto text-center mb-16">
           <h2 className="text-sm font-medium text-primary uppercase tracking-wider mb-3">Why it matters</h2>
           <p className="font-display text-[28px] sm:text-[34px] font-semibold text-text-primary tracking-tight">
             A strong password is your first line of defense
@@ -305,13 +305,13 @@ export default function PasswordGeneratorPage() {
       {/* FAQ */}
       <div className="bg-surface">
       <section className="max-w-6xl mx-auto px-6 lg:px-8 py-24">
-        <div className="max-w-[560px] mx-auto text-center mb-16">
+        <div className="max-w-140 mx-auto text-center mb-16">
           <h2 className="text-sm font-medium text-primary uppercase tracking-wider mb-3">FAQ</h2>
           <p className="font-display text-[28px] sm:text-[34px] font-semibold text-text-primary tracking-tight">
             Common questions
           </p>
         </div>
-        <div className="max-w-[720px] mx-auto divide-y divide-border">
+        <div className="max-w-180 mx-auto divide-y divide-border">
           {FAQS.map((faq) => (
             <div key={faq.q} className="py-6 first:pt-0">
               <h3 className="text-[16px] font-medium text-text-primary mb-2">{faq.q}</h3>
@@ -355,7 +355,7 @@ export default function PasswordGeneratorPage() {
           <p className="relative font-display text-[32px] sm:text-[40px] font-semibold text-white tracking-tight leading-tight">
             Don't just generate it, save it.
           </p>
-          <p className="relative text-[15px] sm:text-base text-white/85 mt-3 max-w-[460px] mx-auto">
+          <p className="relative text-[15px] sm:text-base text-white/85 mt-3 max-w-115 mx-auto">
             Store every password behind one encrypted master key, and autofill it wherever you need it next.
           </p>
           <div className="relative flex flex-wrap items-center justify-center gap-4 mt-9">

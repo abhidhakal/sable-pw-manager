@@ -180,7 +180,7 @@ export default function SharedLinksPage() {
                         </div>
                         {linkSecrets[id] ? (
                           <div className="flex items-center gap-1.5 mt-1.5">
-                            <span className="text-xs text-text-muted font-mono truncate max-w-[200px]">
+                            <span className="text-xs text-text-muted font-mono truncate max-w-50">
                               {`${window.location.origin}/share/${id}#…`}
                             </span>
                             <button
@@ -236,7 +236,7 @@ export default function SharedLinksPage() {
                   return (
                     <div
                       key={id}
-                      className={`flex items-center gap-4 p-4 bg-surface border rounded-lg transition-colors opacity-60 ${selected ? 'border-primary/50 !opacity-80' : 'border-border'}`}
+                      className={`flex items-center gap-4 p-4 bg-surface border rounded-lg transition-colors opacity-60 ${selected ? 'border-primary/50 opacity-80!' : 'border-border'}`}
                     >
                       <button
                         onClick={() => toggleSelect(id)}

@@ -21,7 +21,7 @@ export function SupportCard() {
         href={SUPPORT_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center gap-2 w-full h-9 px-4 rounded-[var(--radius-sm)] text-xs font-medium bg-primary text-white hover:bg-primary-hover transition-all"
+        className="inline-flex items-center justify-center gap-2 w-full h-9 px-4 rounded-sm text-xs font-medium bg-primary text-white hover:bg-primary-hover transition-all"
       >
         <Heart size={13} className="fill-white" />
         BuyMeMomo

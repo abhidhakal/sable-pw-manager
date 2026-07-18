@@ -57,7 +57,7 @@ export function VaultItemCard({ item, category, onClick, selectable, selected, o
   return (
     <div
       onClick={selectable ? onToggleSelect : onClick}
-      className={`group flex items-center gap-4 ${compact ? 'p-2.5' : 'p-3.5'} bg-surface border rounded-lg transition-all duration-(--transition-base) cursor-pointer hover:shadow-sm hover:-translate-y-[1px] ${
+      className={`group flex items-center gap-4 ${compact ? 'p-2.5' : 'p-3.5'} bg-surface border rounded-lg transition-all duration-(--transition-base) cursor-pointer hover:shadow-sm hover:-translate-y-px ${
         selected
           ? 'border-primary bg-primary/5'
           : 'border-border hover:border-border-focus hover:bg-surface-elevated'

@@ -4,6 +4,7 @@ import { onAuthChange } from '@/features/auth/authService'
 import { useAuthStore } from '@/stores/authStore'
 import { useVaultStore } from '@/stores/vaultStore'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { toast } from '@/components/ui/Toast'
 
 const PUBLIC_PAGES = ['/', '/login', '/signup']
 // Only these trigger an auth redirect for a signed-in user — i.e. only when
@@ -28,7 +29,15 @@ export function AuthGuard({ children }: { children: ReactNode }) {
         try {
           await checkVaultExists(firebaseUser.uid)
         } catch {
-          // handled below
+          // Transient failure (e.g. network blip) — retry once before giving
+          // up, so a flaky connection doesn't strand the user on a route
+          // that can never resolve (vaultExists stays null otherwise, and
+          // no redirect branch below matches a null state).
+          try {
+            await checkVaultExists(firebaseUser.uid)
+          } catch {
+            toast.error("Couldn't verify your vault — check your connection and reload.")
+          }
         }
       } else {
         clearVault()

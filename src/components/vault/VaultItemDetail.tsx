@@ -30,7 +30,7 @@ const PEEK_DURATION = 5000 // 5 seconds
 export function VaultItemDetail({ item }: VaultItemDetailProps) {
   const nav = useNavigate()
   const { user } = useAuthStore()
-  const { categories, deleteItem, moveItemToCategory, vaultKey } = useVaultStore()
+  const { categories, deleteItem, moveItemToCategory, vaultKey, activeCategoryId, setActiveCategoryId } = useVaultStore()
   const [showPw, setShowPw] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
   const [copyTime, setCopyTime] = useState<number | null>(null)
@@ -85,6 +85,16 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
     } catch { /* toast shown by store */ }
   }
 
+  const handleBackToVault = () => {
+    // If the active category filter would hide this item (e.g. it was opened
+    // via the command palette from a different category), clear it so "back"
+    // doesn't silently return to a list that no longer shows what was just viewed.
+    if (activeCategoryId && activeCategoryId !== item.categoryId) {
+      setActiveCategoryId(null)
+    }
+    nav('/app/vault')
+  }
+
   // Calculate age
   const lastUpdated = item.updatedAt?.toMillis?.() || (item.updatedAt as any)?.seconds * 1000 || item.createdAt?.toMillis?.() || (item.createdAt as any)?.seconds * 1000
   const daysSinceUpdate = lastUpdated ? Math.floor((Date.now() - lastUpdated) / (1000 * 60 * 60 * 24)) : null
@@ -103,11 +113,11 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
     <div className="animate-fade-in">
       {/* Back button + Breadcrumb */}
       <div className="flex items-center gap-3 mb-4">
-        <button onClick={() => nav('/app/vault')} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to vault">
+        <button onClick={handleBackToVault} className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer" aria-label="Back to vault">
           <ArrowLeft size={18} />
         </button>
         <nav className="flex items-center gap-1.5 text-xs text-text-muted">
-          <button onClick={() => nav('/app/vault')} className="hover:text-text-primary transition-colors cursor-pointer">Vault</button>
+          <button onClick={handleBackToVault} className="hover:text-text-primary transition-colors cursor-pointer">Vault</button>
           <span>/</span>
           <span className="text-text-secondary truncate max-w-48">{item.title}</span>
         </nav>

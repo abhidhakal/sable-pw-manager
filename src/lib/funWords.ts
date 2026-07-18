@@ -10,6 +10,9 @@ export const FUN_ADJECTIVES = [
 export const FUN_NOUNS = [
   // Food
   'cookie', 'waffle', 'taco', 'muffin', 'noodle', 'pickle', 'biscuit', 'pretzel', 'donut', 'mango',
+  'momo', 'gundruk', 'pizza', 'marshmallow', 'burger', 'sushi', 'ramen', 'dumpling', 'samosa', 'curry',
+  'mochi', 'croissant', 'bagel', 'popcorn', 'nachos', 'burrito', 'pancake', 'cupcake', 'brownie', 'churro',
+  'kebab', 'tamale', 'gelato',
   // Animals
   'panda', 'otter', 'penguin', 'koala', 'falcon', 'walrus', 'gecko', 'badger', 'llama', 'moose',
   // Fantasy / sci-fi

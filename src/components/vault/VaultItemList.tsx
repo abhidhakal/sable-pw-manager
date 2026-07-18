@@ -113,7 +113,7 @@ export function VaultItemList() {
     <div className="space-y-4 animate-fade-in">
       {/* Header / Search */}
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-50">
           <Input
             ref={searchRef}
             placeholder="Search passwords... (⌘K)"
@@ -258,8 +258,20 @@ export function VaultItemList() {
       ) : (
         <EmptyState
           icon={<Search size={48} />}
-          title={searchQuery ? 'No results found' : 'No passwords yet'}
-          description={searchQuery ? 'Try adjusting your search terms.' : 'Create your first password to securely store it in your vault.'}
+          title={
+            searchQuery
+              ? 'No results found'
+              : activeCategoryId
+                ? `No passwords in ${categories.find((c) => c.id === activeCategoryId)?.name || 'this category'}`
+                : 'No passwords yet'
+          }
+          description={
+            searchQuery
+              ? 'Try adjusting your search terms.'
+              : activeCategoryId
+                ? 'Add one here, or select "All Items" to see the rest of your vault.'
+                : 'Create your first password to securely store it in your vault.'
+          }
           action={
             <Button size="sm" icon={<Plus size={15} />} onClick={() => nav('/app/vault/new')}>
               Add Password

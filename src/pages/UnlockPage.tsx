@@ -31,7 +31,9 @@ export default function UnlockPage() {
     setUnlocking(true)
     try {
       await unlockVault(user.uid, password)
-      nav('/app/vault', { replace: true })
+      const lastPath = sessionStorage.getItem('sable:lastPath')
+      sessionStorage.removeItem('sable:lastPath')
+      nav(lastPath && lastPath.startsWith('/app') ? lastPath : '/app/vault', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to unlock vault')
       setMasterPassword('')

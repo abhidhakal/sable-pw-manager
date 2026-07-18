@@ -6,12 +6,18 @@ import { useNavigate } from 'react-router'
 import { useVaultStore } from '@/stores/vaultStore'
 import { copyToClipboard } from '@/lib/clipboard'
 import { toast } from '@/components/ui/Toast'
+import { isSafeUrl } from '@/lib/url'
 
 function getCatIcon(name: string): LucideIcon {
   return (Icons as any)[name] || Icons.Folder
 }
 
-export function CommandPalette() {
+interface CommandPaletteProps {
+  /** Called right before navigating to a result, e.g. to close a mobile sidebar. */
+  onNavigate?: () => void
+}
+
+export function CommandPalette({ onNavigate }: CommandPaletteProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -90,6 +96,7 @@ export function CommandPalette() {
       const item = results[selectedIndex]
       if (item) {
         setOpen(false)
+        onNavigate?.()
         nav(`/app/vault/${item.id}`)
       }
     } else if (e.key === 'Escape') {
@@ -150,6 +157,7 @@ export function CommandPalette() {
                   key={item.id}
                   onClick={() => {
                     setOpen(false)
+                    onNavigate?.()
                     nav(`/app/vault/${item.id}`)
                   }}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors ${
@@ -174,7 +182,7 @@ export function CommandPalette() {
                     >
                       {copiedId === item.id ? <Check size={13} className="text-success" /> : <Key size={13} />}
                     </button>
-                    {item.url && (
+                    {item.url && isSafeUrl(item.url) && (
                       <a
                         href={item.url}
                         target="_blank"

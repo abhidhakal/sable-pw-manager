@@ -36,7 +36,7 @@ export function Sidebar({
 }: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const isOnVault = location.pathname.startsWith('/app/vault') || location.pathname === '/'
+  const isOnVault = location.pathname.startsWith('/app/vault')
   const isOnSettings = location.pathname.startsWith('/app/settings')
   const isOnHealth = location.pathname.startsWith('/app/health')
   const isOnShared = location.pathname.startsWith('/app/shared')
@@ -56,6 +56,7 @@ export function Sidebar({
   const handleLock = () => {
     lockVault()
     navigate('/unlock')
+    onClose()
   }
 
   return (
@@ -66,7 +67,7 @@ export function Sidebar({
           <Logo className="w-9 h-9 rounded-md" />
           <div className="min-w-0">
             <h1 className="text-sm font-semibold text-text-primary tracking-tight">Sable</h1>
-            <p className="text-[10px] text-text-muted truncate max-w-[120px]">
+            <p className="text-[10px] text-text-muted truncate max-w-30">
               {user?.email}
             </p>
           </div>
@@ -193,7 +194,7 @@ export function Sidebar({
 
             {/* Add category */}
             <button
-              onClick={() => navigate('/app/settings')}
+              onClick={() => { navigate('/app/settings'); onClose() }}
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-text-muted hover:text-text-secondary hover:bg-surface-elevated transition-all cursor-pointer"
             >
               <Plus size={15} />
@@ -209,7 +210,7 @@ export function Sidebar({
           <SupportPill />
         </div>
         <button
-          onClick={() => navigate('/app/settings')}
+          onClick={() => { navigate('/app/settings'); onClose() }}
           className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-all cursor-pointer
             ${isOnSettings
               ? 'bg-surface-elevated text-text-primary border border-border'
