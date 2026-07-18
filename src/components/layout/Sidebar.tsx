@@ -71,7 +71,7 @@ export function Sidebar({
             </p>
           </div>
         </div>
-        <button onClick={onClose} className="lg:hidden p-1.5 -mr-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer">
+        <button onClick={onClose} className="lg:hidden p-2.5 -mr-2.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer">
           <X size={18} />
         </button>
       </div>

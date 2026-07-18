@@ -5,6 +5,7 @@ import { decryptSharePayload, type ShareableItem } from '@/lib/sharingCrypto'
 import { claimAndGetSharedLink } from '@/features/sharing/sharingService'
 import { copyToClipboard } from '@/lib/clipboard'
 import { toast } from '@/components/ui/Toast'
+import { isSafeUrl } from '@/lib/url'
 
 const AUTO_CLEAR_SECONDS = 120
 
@@ -174,7 +175,7 @@ export default function ShareViewerPage() {
             <div key={index} className="bg-surface border border-border rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-border bg-surface-elevated">
                 <h3 className="text-sm font-medium text-text-primary">{item.title}</h3>
-                {item.url && (
+                {item.url && isSafeUrl(item.url) && (
                   <a
                     href={item.url}
                     target="_blank"

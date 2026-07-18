@@ -5,6 +5,7 @@ import type { VaultItem, Category } from '@/types/vault'
 import { Badge } from '@/components/ui/Badge'
 import { copyToClipboard } from '@/lib/clipboard'
 import { toast } from '@/components/ui/Toast'
+import { isSafeUrl } from '@/lib/url'
 
 interface VaultItemCardProps {
   item: VaultItem & { id: string }
@@ -114,7 +115,7 @@ export function VaultItemCard({ item, category, onClick, selectable, selected, o
 
       {/* Actions — hidden in selection mode */}
       {!selectable && !isSecureNote && (
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
           <button
             onClick={(e) => handleCopy(item.username, 'Username', e)}
             className="p-1.5 rounded-sm text-text-muted hover:text-text-primary hover:bg-surface-elevated transition-colors cursor-pointer"
@@ -129,7 +130,7 @@ export function VaultItemCard({ item, category, onClick, selectable, selected, o
           >
             {copiedField === 'Password' ? <Check size={14} className="text-success" /> : <Icons.KeyRound size={14} />}
           </button>
-          {item.url && (
+          {item.url && isSafeUrl(item.url) && (
             <a
               href={item.url}
               target="_blank"

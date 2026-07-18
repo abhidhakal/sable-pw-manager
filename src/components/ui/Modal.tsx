@@ -32,20 +32,40 @@ export function Modal({
   useEffect(() => {
     if (!open) return
 
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+      if (e.key !== 'Tab' || !contentRef.current) return
+
+      const focusable = contentRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )
+      if (focusable.length === 0) return
+
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
 
-    document.addEventListener('keydown', handleEsc)
+    document.addEventListener('keydown', handleKeydown)
     document.body.style.overflow = 'hidden'
 
     return () => {
-      document.removeEventListener('keydown', handleEsc)
+      document.removeEventListener('keydown', handleKeydown)
       document.body.style.overflow = ''
     }
   }, [open, onClose])
 
-  // Focus trap
+  // Initial focus
   useEffect(() => {
     if (!open || !contentRef.current) return
 

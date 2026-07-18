@@ -14,6 +14,7 @@ import SettingsPage from '@/pages/SettingsPage'
 import HealthPage from '@/pages/HealthPage'
 import SharedLinksPage from '@/pages/SharedLinksPage'
 import ShareViewerPage from '@/pages/ShareViewerPage'
+import PasswordGeneratorPage from '@/pages/PasswordGeneratorPage'
 
 /**
  * Root layout wraps everything in the AuthGuard which
@@ -30,6 +31,8 @@ function RootLayout() {
 export const router = createBrowserRouter([
   // Public share viewer — no auth required
   { path: '/share/:linkId', element: <ShareViewerPage /> },
+  // Public password generator — no auth required
+  { path: '/password-generator', element: <PasswordGeneratorPage /> },
   {
     element: <RootLayout />,
     children: [

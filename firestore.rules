@@ -69,9 +69,14 @@ service cloud.firestore {
                       'itemCount', 'expiresAt', 'maxViews', 'viewCount', 'burned'
                     ]);
 
-      // View recording: anyone may increment viewCount and flip burned, nothing else
+      // View recording: anyone may increment viewCount by exactly 1 and/or flip
+      // burned false -> true, nothing else. Prevents resetting viewCount or
+      // un-burning a link to bypass the one-time-view guarantee.
       allow update: if request.resource.data.diff(resource.data)
-                        .affectedKeys().hasOnly(['viewCount', 'burned']);
+                        .affectedKeys().hasOnly(['viewCount', 'burned'])
+                    && request.resource.data.viewCount == resource.data.viewCount + 1
+                    && (resource.data.burned == request.resource.data.burned
+                        || request.resource.data.burned == true);
 
       // Only creator can revoke (delete)
       allow delete: if request.auth != null

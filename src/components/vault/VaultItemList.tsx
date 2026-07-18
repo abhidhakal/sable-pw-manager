@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { Plus, Search, Upload, Download, CheckSquare, Square, Trash2, X, List, LayoutGrid, ArrowUpDown, FileText, Share2 } from 'lucide-react'
 import { useVaultStore } from '@/stores/vaultStore'
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { VaultListSkeleton } from '@/components/ui/Skeleton'
 import { Dropdown, DropdownItem } from '@/components/ui/Dropdown'
+import { Modal } from '@/components/ui/Modal'
 
 type ViewMode = 'grid' | 'list'
 type SortMode = 'alpha' | 'recent' | 'modified'
@@ -29,18 +30,7 @@ export function VaultItemList() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [sortMode, setSortMode] = useState<SortMode>('alpha')
   const searchRef = useRef<HTMLInputElement>(null)
-
-  // Cmd+K hint — focus search on /
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === '/' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
-        e.preventDefault()
-        searchRef.current?.focus()
-      }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [])
+  const [showBulkDelete, setShowBulkDelete] = useState(false)
 
   const filteredItems = useMemo(() => {
     const filtered = items.filter((item) => {
@@ -106,6 +96,7 @@ export function VaultItemList() {
       await deleteItems(user.uid, Array.from(selectedIds))
       setSelectedIds(new Set())
       setSelectMode(false)
+      setShowBulkDelete(false)
     } catch {
       // error toast handled in store
     } finally {
@@ -175,7 +166,7 @@ export function VaultItemList() {
       </div>
 
       {/* Toolbar row */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Button variant="secondary" size="sm" icon={<Upload size={14} />} onClick={() => setShowImport(true)}>
           Import
         </Button>
@@ -201,7 +192,7 @@ export function VaultItemList() {
 
       {/* Selection toolbar */}
       {selectMode && (
-        <div className="flex items-center gap-3 p-3 bg-surface-elevated border border-border rounded-lg">
+        <div className="flex items-center gap-3 p-3 bg-surface-elevated border border-border rounded-lg flex-wrap">
           <button
             onClick={toggleSelectAll}
             className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
@@ -214,8 +205,7 @@ export function VaultItemList() {
               variant="danger"
               size="sm"
               icon={<Trash2 size={14} />}
-              onClick={handleDelete}
-              loading={deleting}
+              onClick={() => setShowBulkDelete(true)}
             >
               Delete {selectedIds.size} password{selectedIds.size === 1 ? '' : 's'}
             </Button>
@@ -237,6 +227,17 @@ export function VaultItemList() {
           )}
         </div>
       )}
+
+      {/* Bulk delete confirm */}
+      <Modal open={showBulkDelete} onClose={() => setShowBulkDelete(false)} title="Delete Passwords" size="sm">
+        <p className="text-sm text-text-secondary mb-4">
+          Are you sure you want to delete <strong>{selectedIds.size}</strong> password{selectedIds.size === 1 ? '' : 's'}? This cannot be undone.
+        </p>
+        <div className="flex gap-2">
+          <Button variant="secondary" fullWidth onClick={() => setShowBulkDelete(false)}>Cancel</Button>
+          <Button variant="danger" fullWidth loading={deleting} onClick={handleDelete}>Delete</Button>
+        </div>
+      </Modal>
 
       {/* List */}
       {filteredItems.length > 0 ? (

@@ -102,7 +102,7 @@ export function AppLayout() {
         <header className="lg:hidden flex items-center h-14 px-4 border-b border-border bg-surface shrink-0">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-1.5 -ml-1.5 mr-3 rounded-md text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors cursor-pointer"
+            className="p-2.5 -ml-2.5 mr-2 rounded-md text-text-secondary hover:bg-surface-elevated hover:text-text-primary transition-colors cursor-pointer"
             aria-label="Open sidebar"
           >
             <Menu size={20} />

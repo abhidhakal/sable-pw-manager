@@ -48,6 +48,15 @@ export function CommandPalette() {
     return () => clearTimeout(timeout)
   }, [open])
 
+  // Lock background scroll while open
+  useEffect(() => {
+    if (!open) return
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
+
   const results = useMemo(() => {
     if (!query.trim()) return items.slice(0, 8)
     const q = query.toLowerCase()

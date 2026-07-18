@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /unlock
+Disallow: /setup-vault
+Disallow: /share/
+
+Sitemap: https://sablepw.netlify.app/sitemap.xml

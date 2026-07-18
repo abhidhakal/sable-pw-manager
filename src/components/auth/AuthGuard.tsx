@@ -6,6 +6,10 @@ import { useVaultStore } from '@/stores/vaultStore'
 import { FullPageSpinner } from '@/components/ui/Spinner'
 
 const PUBLIC_PAGES = ['/', '/login', '/signup']
+// Only these trigger an auth redirect for a signed-in user — i.e. only when
+// they explicitly go to log in or sign up. The homepage itself is exempt so
+// an authenticated (or locked) user can freely browse it, no bounce.
+const AUTH_ENTRY_PAGES = ['/login', '/signup']
 const SETUP_PAGE = '/setup-vault'
 const UNLOCK_PAGE = '/unlock'
 
@@ -47,7 +51,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     }
 
     // User is authenticated — redirect login/signup to appropriate place
-    if (['/', '/login', '/signup'].includes(path)) {
+    if (AUTH_ENTRY_PAGES.includes(path)) {
       if (vaultExists === false) {
         nav(SETUP_PAGE, { replace: true })
       } else if (vaultExists === true && locked) {

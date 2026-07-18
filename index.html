@@ -3,12 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="A zero-knowledge personal password vault. Your data is encrypted end-to-end — we never see your passwords." />
+    <meta name="description" content="Sable is a free, open-source, zero-knowledge password manager. Your passwords are encrypted on your device with AES-256-GCM before they ever touch our servers. Try the free password generator, no account needed." />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content="#F8F7F4" />
+    <link rel="canonical" href="https://sablepw.netlify.app/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Sable" />
+    <meta property="og:title" content="Sable - Zero-Knowledge Password Manager" />
+    <meta property="og:description" content="Free, open-source password manager with true end-to-end encryption. Your master password never leaves your device." />
+    <meta property="og:url" content="https://sablepw.netlify.app/" />
+    <meta property="og:image" content="https://sablepw.netlify.app/logo.png" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sable - Zero-Knowledge Password Manager" />
+    <meta name="twitter:description" content="Free, open-source password manager with true end-to-end encryption. Your master password never leaves your device." />
+    <meta name="twitter:image" content="https://sablepw.netlify.app/logo.png" />
+
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://www.google.com; connect-src 'self' https://*.firebaseio.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://firestore.googleapis.com https://api.pwnedpasswords.com; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self';" />
     <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon-64x64.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <title>Sable - Your Password Manager</title>
+    <title>Sable - Zero-Knowledge Password Manager</title>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Sable",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Web",
+        "url": "https://sablepw.netlify.app/",
+        "description": "Zero-knowledge password manager with AES-256-GCM end-to-end encryption. Free and open source.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -14,7 +14,8 @@ import { PasswordStrengthBar } from './PasswordStrengthBar'
 import { ShareModal } from './ShareModal'
 import { copyToClipboard } from '@/lib/clipboard'
 import { toast } from '@/components/ui/Toast'
-import { getPasswordHistory, formatHistoryDate } from '@/lib/passwordHistory'
+import { getPasswordHistory, formatHistoryDate, type PasswordHistoryEntry } from '@/lib/passwordHistory'
+import { isSafeUrl } from '@/lib/url'
 
 interface VaultItemDetailProps {
   item: VaultItem & { id: string }
@@ -29,7 +30,7 @@ const PEEK_DURATION = 5000 // 5 seconds
 export function VaultItemDetail({ item }: VaultItemDetailProps) {
   const nav = useNavigate()
   const { user } = useAuthStore()
-  const { categories, deleteItem, moveItemToCategory } = useVaultStore()
+  const { categories, deleteItem, moveItemToCategory, vaultKey } = useVaultStore()
   const [showPw, setShowPw] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
   const [copyTime, setCopyTime] = useState<number | null>(null)
@@ -38,8 +39,12 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
   const [showMove, setShowMove] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [showShare, setShowShare] = useState(false)
+  const [history, setHistory] = useState<PasswordHistoryEntry[]>([])
 
-  const history = useMemo(() => getPasswordHistory(item.id), [item.id])
+  useEffect(() => {
+    if (!vaultKey) return
+    getPasswordHistory(item.id, vaultKey).then(setHistory)
+  }, [item.id, vaultKey])
 
   const category = useMemo(() => categories.find((c) => c.id === item.categoryId), [categories, item.categoryId])
   const CatIcon = category ? getCatIcon(category.icon) : Icons.Folder
@@ -58,7 +63,7 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
     if (ok) {
       setCopied(field)
       setCopyTime(Date.now())
-      toast.success(`${field} copied`)
+      toast.success(`${field} copied — clipboard clears in 30s`)
       setTimeout(() => setCopied(null), 30000)
     }
   }
@@ -152,7 +157,7 @@ export function VaultItemDetail({ item }: VaultItemDetailProps) {
                 <p className="text-[11px] text-text-muted uppercase tracking-wider mb-0.5">{f.label}</p>
                 {f.secret ? (
                   <p className="text-sm text-text-primary font-mono">{showPw ? f.value : '•'.repeat(16)}</p>
-                ) : f.isUrl ? (
+                ) : f.isUrl && isSafeUrl(f.value) ? (
                   <a href={f.value} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:text-primary-hover flex items-center gap-1 truncate">
                     {f.value} <ExternalLink size={12} />
                   </a>

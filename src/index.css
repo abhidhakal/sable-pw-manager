@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
 @import "tailwindcss";
 
 /* ── Theme Variables ── */
@@ -66,6 +66,7 @@
 
   /* ── Typography ── */
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
 
   /* ── Border Radius ── */
   --radius-sm: 6px;
@@ -183,6 +184,11 @@ body {
   to { opacity: 0; transform: translateX(100%); }
 }
 
+@keyframes confetti-burst {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)); opacity: 0; }
+}
+
 .animate-fade-in {
   animation: fade-in var(--transition-base) both;
 }
@@ -213,4 +219,10 @@ body {
 
 .animate-shimmer {
   animation: shimmer 1.5s infinite;
+}
+
+.animate-confetti {
+  animation-name: confetti-burst;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
 }

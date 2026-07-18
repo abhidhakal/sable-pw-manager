@@ -35,8 +35,9 @@ export function exportAsCSV(items: (VaultItem & { id: string })[], categories: (
 }
 
 /**
- * Export vault items as an encrypted JSON string.
- * The JSON is encrypted with the current vault key for safe backup.
+ * Export vault items as a plaintext JSON string. Not encrypted — the caller
+ * (ExportModal) warns the user that the exported file contains plaintext
+ * passwords before triggering this.
  */
 export function exportAsJSON(items: (VaultItem & { id: string })[], categories: (Category & { id: string })[]): string {
   const catMap = new Map(categories.map((c) => [c.id, c.name]))
@@ -74,6 +75,12 @@ export function downloadFile(content: string, filename: string, mimeType: string
 }
 
 function escapeCSV(value: string): string {
+  // Neutralize formula injection: a leading =, +, -, or @ makes spreadsheet
+  // apps (Excel/Sheets) evaluate the cell as a formula when the export is opened.
+  if (/^[=+\-@]/.test(value)) {
+    value = `'${value}`
+  }
+
   if (value.includes(',') || value.includes('"') || value.includes('\n')) {
     return `"${value.replace(/"/g, '""')}"`
   }

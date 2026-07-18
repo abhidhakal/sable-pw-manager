@@ -309,7 +309,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     // Record password history if password changed
     const existingItem = get().items.find((i) => i.id === itemId)
     if (existingItem && existingItem.password !== item.password) {
-      recordPasswordChange(itemId, existingItem.password)
+      await recordPasswordChange(itemId, existingItem.password, key)
     }
 
     set({ loading: true })
@@ -419,13 +419,38 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   },
 
   deleteCategory: async (uid, categoryId) => {
+    const key = get().vaultKey
+    if (!key) throw new Error('Vault is locked')
+
+    const remainingCategories = get().categories.filter((c) => c.id !== categoryId)
+    const fallback = remainingCategories.find((c) => c.name === 'Other') || remainingCategories[0] || null
+    const affectedItems = get().items.filter((i) => i.categoryId === categoryId)
+
+    // Reassign orphaned items to a fallback category before deleting, so nothing
+    // is left pointing at a category id that no longer exists.
+    if (fallback) {
+      for (const item of affectedItems) {
+        const updatedItem = { ...item, categoryId: fallback.id }
+        const encrypted = await encryptVaultItem(updatedItem, key)
+        await vaultService.updateVaultItem(uid, item.id, encrypted)
+      }
+    }
+
     await categoryService.deleteCategory(uid, categoryId)
+
     set((state) => ({
       categories: state.categories.filter((c) => c.id !== categoryId),
       activeCategoryId: state.activeCategoryId === categoryId ? null : state.activeCategoryId,
+      items: fallback
+        ? state.items.map((i) => (i.categoryId === categoryId ? { ...i, categoryId: fallback.id } : i))
+        : state.items,
     }))
     get().resetAutoLock()
-    toast.success('Category deleted')
+    toast.success(
+      affectedItems.length > 0 && fallback
+        ? `Category deleted, ${affectedItems.length} item${affectedItems.length === 1 ? '' : 's'} moved to "${fallback.name}"`
+        : 'Category deleted',
+    )
   },
 
   setSearchQuery: (query) => set({ searchQuery: query }),

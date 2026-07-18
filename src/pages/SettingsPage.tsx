@@ -38,6 +38,7 @@ export default function SettingsPage() {
   const [confirmAccountPw, setConfirmAccountPw] = useState('')
   const [accountPwLoading, setAccountPwLoading] = useState(false)
   const [accountPwError, setAccountPwError] = useState<string | null>(null)
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
 
   const handleChangeAccountPassword = async () => {
     setAccountPwError(null)
@@ -140,7 +141,7 @@ export default function SettingsPage() {
 
       {/* Appearance + Support row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-5 bg-surface border border-border rounded-xl flex flex-col">
+        <Card className="flex flex-col">
           <div className="flex items-center gap-3 mb-3">
             <Sun size={18} className="text-primary" />
             <h3 className="text-sm font-semibold text-text-primary">Appearance</h3>
@@ -172,7 +173,7 @@ export default function SettingsPage() {
               Dark
             </button>
           </div>
-        </div>
+        </Card>
 
         <SupportCard />
       </div>
@@ -198,7 +199,7 @@ export default function SettingsPage() {
                   {cat.isDefault && <span className="text-[10px] text-text-muted">(default)</span>}
                 </span>
                 {!cat.isDefault && (
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <button onClick={() => setEditCat(cat)} className="p-1 rounded text-text-muted hover:text-text-primary cursor-pointer"><Pencil size={13} /></button>
                     <button onClick={() => setDeleteCat(cat)} className="p-1 rounded text-text-muted hover:text-danger cursor-pointer"><Trash2 size={13} /></button>
                   </div>
@@ -221,10 +222,19 @@ export default function SettingsPage() {
               <p className="text-sm text-text-primary">Sign Out</p>
               <p className="text-xs text-text-muted">Lock vault and sign out of your account</p>
             </div>
-            <Button variant="danger" size="sm" icon={<LogOut size={14} />} onClick={handleLogout}>Sign Out</Button>
+            <Button variant="danger" size="sm" icon={<LogOut size={14} />} onClick={() => setShowSignOutConfirm(true)}>Sign Out</Button>
           </div>
         </div>
       </Card>
+
+      {/* Sign out confirm */}
+      <Modal open={showSignOutConfirm} onClose={() => setShowSignOutConfirm(false)} title="Sign Out" size="sm">
+        <p className="text-sm text-text-secondary mb-4">Sign out and lock your vault? You'll need your master password to unlock it again next time.</p>
+        <div className="flex gap-2">
+          <Button variant="secondary" fullWidth onClick={() => setShowSignOutConfirm(false)}>Cancel</Button>
+          <Button variant="danger" fullWidth onClick={handleLogout}>Sign Out</Button>
+        </div>
+      </Modal>
 
       {/* Change master password modal */}
       <ChangeMasterPassword open={showChangePw} onClose={() => setShowChangePw(false)} />
@@ -278,7 +288,7 @@ export default function SettingsPage() {
 
       {/* Delete category confirm */}
       <Modal open={!!deleteCat} onClose={() => setDeleteCat(null)} title="Delete Category" size="sm">
-        <p className="text-sm text-text-secondary mb-4">Delete <strong>{deleteCat?.name}</strong>? Items in this category won't be deleted but will become uncategorized.</p>
+        <p className="text-sm text-text-secondary mb-4">Delete <strong>{deleteCat?.name}</strong>? Items in this category won't be deleted, they'll be moved to another category automatically.</p>
         <div className="flex gap-2">
           <Button variant="secondary" fullWidth onClick={() => setDeleteCat(null)}>Cancel</Button>
           <Button variant="danger" fullWidth loading={catLoading} onClick={handleDeleteCategory}>Delete</Button>
